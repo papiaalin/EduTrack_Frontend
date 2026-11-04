@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Portal | BUP LMS</title>
+
+<style>
+:root {
+    --navy: #14264b;
+    --blue: #2563eb;
+    --bg: #f3f6fc;
+    --text: #243047;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --green: #059669;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: var(--bg); color: var(--text); }
+button, input, select, textarea { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button { cursor: pointer; }
+.layout { display: flex; min-height: 100vh; }
+.sidebar {
+    width: 240px; flex-shrink: 0; background: var(--navy);
+    color: white; padding: 24px 14px; min-height: 100vh;
+}
+.logo { font-size: 24px; font-weight: bold; padding: 0 10px; }
+.logo-sub { color: #b9c8e8; font-size: 12px; padding: 6px 10px 24px; }
+.menu-label { color: #9fb2d8; font-size: 11px; padding: 15px 10px 8px; }
+.sidebar nav a {
+    display: block; padding: 11px 12px; margin: 4px 0;
+    color: #dbeafe; text-decoration: none; border-radius: 8px; font-size: 13px;
+}
+.sidebar nav a:hover, .sidebar nav a.active { background: #2563eb; color: white; }
+.sidebar .logout { margin-top: 18px; border: 1px solid #405176; }
+main { flex: 1; min-width: 0; }
+.topbar {
+    background: white; padding: 16px 25px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 15px; justify-content: space-between;
+    position: sticky; top: 0; z-index: 5;
+}
+.search { flex: 1; max-width: 550px; }
+.search input { width: 100%; }
+.student-info { font-size: 13px; text-align: right; line-height: 1.6; }
+.content { padding: 25px; }
+.page { display: none; }
+.page.active { display: block; }
+.welcome {
+    padding: 28px; border-radius: 14px; color: white;
+    background: linear-gradient(115deg, #16365e, #2563eb); margin-bottom: 22px;
+}
+.welcome h2 { font-size: 25px; margin-bottom: 10px; }
+.welcome p { color: #e0eaff; line-height: 1.7; font-size: 14px; }
+.grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.card, .panel {
+    background: white; padding: 20px; border: 1px solid var(--border);
+    border-radius: 12px; box-shadow: 0 3px 12px #17255408; min-width: 0;
+}
+.stat-label { color: var(--muted); font-size: 13px; margin-bottom: 13px; }
+.stat-number { font-size: 28px; font-weight: bold; margin-bottom: 8px; }
+.small { color: var(--muted); font-size: 12px; line-height: 1.6; }
+.heading { font-size: 19px; margin: 27px 0 15px; }
+.card h3, .panel h3 { font-size: 15px; margin-bottom: 10px; }
+.course-title { font-weight: bold; margin-bottom: 9px; }
+.progress { height: 8px; background: #e2e8f0; border-radius: 20px; overflow: hidden; margin: 13px 0; }
+.progress div { height: 100%; background: var(--blue); border-radius: 20px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 17px; }
+input, select, textarea {
+    padding: 11px 12px; border: 1px solid #cbd5e1;
+    border-radius: 7px; background: white; color: var(--text); max-width: 100%;
+}
+.toolbar input { flex: 1; min-width: 170px; }
+input:focus, select:focus, textarea:focus { outline: 2px solid #bfdbfe; border-color: var(--blue); }
+button, .btn {
+    display: inline-block; border: 0; border-radius: 7px; padding: 10px 14px;
+    background: var(--blue); color: white; text-decoration: none; font-size: 13px;
+}
+button:hover, .btn:hover { filter: brightness(.94); }
+.secondary { background: #e2e8f0; color: #334155; }
+.green-btn { background: var(--green); }
+.danger { background: #fee2e2; color: #b91c1c; }
+.badge { display: inline-block; padding: 5px 9px; border-radius: 20px; font-size: 11px; background: #dcfce7; color: #166534; }
+.badge.due { background: #fef3c7; color: #92400e; }
+.badge.upcoming { background: #dbeafe; color: #1d4ed8; }
+.badge.overdue { background: #fee2e2; color: #b91c1c; }
+.badge.admin { background: #f3e8ff; color: #6b21a8; }
+table { width: 100%; border-collapse: collapse; min-width: 570px; }
+th, td { text-align: left; padding: 13px; font-size: 13px; border-bottom: 1px solid #edf0f5; }
+th { background: #f1f5f9; color: #475569; }
+.table-wrap { overflow-x: auto; }
+.notice { padding: 15px; border-radius: 9px; background: #eff6ff; margin-bottom: 10px; line-height: 1.6; font-size: 13px; border-left: 4px solid var(--blue); }
+.notice.urgent { background: #fff1f2; border-left-color: #e11d48; }
+.notice.event { background: #f0fdf4; border-left-color: #059669; }
+.notice.admin-notice { background: #faf5ff; border-left-color: #9333ea; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.form-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 7px; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; }
+.full { grid-column: 1 / -1; }
+.item { padding: 14px 0; border-bottom: 1px solid var(--border); }
+.item:last-child { border-bottom: 0; }
+.item p { margin: 6px 0; font-size: 13px; line-height: 1.6; }
+.item a { color: var(--blue); font-size: 13px; }
+.muted { color: var(--muted); }
+.quiz-option { display: block; padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin: 9px 0; cursor: pointer; }
+.quiz-option:hover { background: #eff6ff; }
+.quiz-option input { margin-right: 8px; }
+.result-box { background: #ecfdf5; padding: 18px; border-radius: 9px; margin-top: 15px; }
+footer { text-align: center; color: #94a3b8; padding: 22px; font-size: 12px; }
+.empty { color: var(--muted); font-size: 13px; padding: 15px 0; }
+
+/* Modal / Popup Styles */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.65); display: none; align-items: center;
+    justify-content: center; z-index: 100; backdrop-filter: blur(4px); padding: 20px;
+}
+.modal-overlay.active { display: flex; }
+.modal-card {
+    background: white; border-radius: 14px; width: 100%; max-width: 750px;
+    max-height: 85vh; overflow-y: auto; padding: 25px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    position: relative; animation: modalPop 0.2s ease-out;
+}
+@keyframes modalPop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal-close {
+    position: absolute; top: 18px; right: 20px; background: #f1f5f9;
+    border: 0; font-size: 18px; font-weight: bold; border-radius: 50%; width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer;
+}
+.modal-close:hover { background: #e2e8f0; color: #0f172a; }
+
+@media(max-width:1100px) {
+    .grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .grid-3 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media(max-width:760px) {
+    .layout { display: block; }
+    .sidebar { width: 100%; min-height: 0; padding: 17px 12px; }
+    .logo-sub { padding-bottom: 12px; }
+    .menu-label { display: none; }
+    .sidebar nav { display: flex; flex-wrap: wrap; gap: 4px; }
+    .sidebar nav a { padding: 9px; margin: 0; }
+    .sidebar .logout { margin-top: 0; }
+    .topbar { position: static; flex-wrap: wrap; padding: 14px; }
+    .search { max-width: none; flex-basis: 100%; }
+    .content { padding: 16px; }
+}
+@media(max-width:520px) {
+    .grid, .grid-2, .grid-3, .form-grid { grid-template-columns: 1fr; }
+    .full { grid-column: auto; }
+    .welcome { padding: 21px; }
+    .welcome h2 { font-size: 21px; }
+}
+</style>
+</head>
+
+<body>
+<div class="layout">
+
+<aside class="sidebar">
+    <div class="logo">EduTrack LMS</div>
+    <div class="logo-sub">Student Learning Portal</div>
+    <div class="menu-label">LEARNING SPACE</div>
+    <nav id="navigation">
+        <a href="#home" class="active" data-page="home" onclick="openPage('home')">▦ Dashboard</a>
+        <a href="#courses" data-page="courses" onclick="openPage('courses')">▤ My Courses</a>
+        <a href="#assignments" data-page="assignments" onclick="openPage('assignments')">✎ Assignments</a>
+        <a href="#quiz" data-page="quiz" onclick="openPage('quiz')">◉ Online Quiz</a>
+        <a href="#lab" data-page="lab" onclick="openPage('lab')">▷ Lab Video Library</a>
+        <a href="#results" data-page="results" onclick="openPage('results')">★ Results & CGPA</a>
+        <a href="#attendance" data-page="attendance" onclick="openPage('attendance')">✓ Attendance</a>
+        <a href="#routine" data-page="routine" onclick="openPage('routine')">▦ Class Routine</a>
+        <a href="#materials" data-page="materials" onclick="openPage('materials')">▧ Study Materials</a>
+        <a href="#notices" data-page="notices" onclick="openPage('notices')">♢ Notice Board</a>
+        <a href="#forum" data-page="forum" onclick="openPage('forum')">☏ Discussion Forum</a>
+        <a href="#projects" data-page="projects" onclick="openPage('projects')">⌘ Project Showcase</a>
+        <a href="#groups" data-page="groups" onclick="openPage('groups')">♧ Study Groups</a>
+        <a href="#events" data-page="events" onclick="openPage('events')">✧ Events & Workshops</a>
+        <a href="../login.html" class="logout">⇥ Logout</a>
+    </nav>
+</aside>
+
+<main>
+<header class="topbar">
+    <div class="search">
+        <input id="globalSearch" placeholder="Search dashboard..." aria-label="Search dashboard">
+    </div>
+    <div class="student-info"><strong id="userName">UserName</strong><br><span class="muted" id="userDeptSub">ICT Student</span></div>
+</header>
+
+<div class="content">
+
+<!-- HOME -->
+<section id="home" class="page active">
+    <div class="welcome">
+        <h2>Welcome back, <span id="userFirstName">User</span>!👋</h2>
+        <p>Learn, practice, build projects and track your academic progress.</p>
+        <p>Department: <span id="userDepartment">ICT</span> | Student Learning Portal</p>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <div class="stat-label">Enrolled Courses</div>
+            <div class="stat-number" id="homeEnrolledCourses">4</div>
+            <span class="small" id="homeCurrentSemester">Semester 5</span>
+        </div>
+        <div class="card">
+            <div class="stat-label">Pending Assignments</div>
+            <div class="stat-number" id="homePending">2</div>
+            <span class="badge due">Action required</span>
+        </div>
+        <div class="card">
+            <div class="stat-label">Current CGPA</div>
+            <div class="stat-number" id="homeCgpa">3.70</div>
+            <span class="small">Sample result</span>
+        </div>
+        <div class="card">
+            <div class="stat-label">Attendance</div>
+            <div class="stat-number" id="homeAttendance">88%</div>
+            <span class="badge">Good standing</span>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <div>
+            <h2 class="heading">Assignments at a Glance</h2>
+            <div class="panel" id="homeAssignments"></div>
+        </div>
+        <div>
+            <h2 class="heading">Course Progress</h2>
+            <div class="panel" id="homeProgress"></div>
+        </div>
+    </div>
+
+    <h2 class="heading">Notice Board / Announcements</h2>
+    <div id="homeNotices"></div>
+
+    <div class="grid-2">
+        <div>
+            <h2 class="heading">Today's Class Routine</h2>
+            <div class="panel" id="homeRoutine"></div>
+        </div>
+        <div>
+            <h2 class="heading">Upcoming Activities</h2>
+            <div class="panel" id="homeEvents"></div>
+        </div>
+    </div>
+</section>
+
+<!-- COURSES -->
+<section id="courses" class="page">
+    <h2 class="heading">My Courses</h2>
+    <div class="toolbar"><input id="courseSearch" placeholder="Search by course or instructor..." oninput="renderCourses()"></div>
+    <div class="grid-2" id="courseList"></div>
+</section>
+
+<!-- ASSIGNMENTS -->
+<section id="assignments" class="page">
+    <h2 class="heading">Assignments</h2>
+    <div class="toolbar">
+        <select id="assignmentFilter" onchange="renderAssignments()">
+            <option value="All">All Assignments</option>
+            <option value="Completed">Completed</option>
+            <option value="Due Soon">Due Soon</option>
+            <option value="Upcoming">Upcoming</option>
+            <option value="Overdue">Overdue</option>
+        </select>
+        <input id="assignmentSearch" placeholder="Search assignments..." oninput="renderAssignments()">
+    </div>
+    <div class="grid" id="assignmentStats"></div>
+    <div class="panel table-wrap">
+        <table>
+            <thead><tr><th>Assignment</th><th>Course</th><th>Deadline</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="assignmentRows"></tbody>
+        </table>
+    </div>
+</section>
+
+<!-- ONLINE QUIZ -->
+<section id="quiz" class="page">
+    <h2 class="heading">Online Quiz & Practice</h2>
+    <p class="muted" style="margin-bottom:16px">Practice with sample MCQs. Answers are checked in your browser.</p>
+    <div class="grid-3" id="quizList"></div>
+    <div class="panel" id="quizArea" style="display:none;margin-top:20px"></div>
+    <div class="panel" style="margin-top:20px">
+        <h3>Previous Practice Results</h3>
+        <div id="quizHistory" class="small">No quizzes completed yet.</div>
+    </div>
+</section>
+
+<!-- LAB VIDEO LIBRARY -->
+<section id="lab" class="page">
+    <h2 class="heading">Programming & Lab Video Library</h2>
+    <p class="muted">Choose a topic to find practical tutorials. Links open YouTube search results for the selected topic.</p>
+    <div class="toolbar" style="margin-top:16px">
+        <input id="videoSearch" placeholder="Search programming, lab or technology..." oninput="renderVideos()">
+        <select id="videoFilter" onchange="renderVideos()">
+            <option value="All">All Topics</option><option>Programming</option><option>Database</option><option>Networking</option><option>Electronics</option><option>Software</option>
+        </select>
+    </div>
+    <div class="grid-3" id="videoList"></div>
+</section>
+
+<!-- RESULTS / CGPA -->
+<section id="results" class="page">
+    <h2 class="heading">Results & CGPA Calculator</h2>
+    <div class="grid-2">
+        <div class="panel">
+            <h3>Add Semester Result</h3>
+            <form id="cgpaForm" class="form-grid">
+                <div class="form-group full"><label for="semesterName">Semester</label><input id="semesterName" required placeholder="e.g. Semester 1"></div>
+                <div class="form-group"><label for="semesterGpa">GPA</label><input id="semesterGpa" type="number" min="0" max="4" step="0.01" required placeholder="e.g. 3.70"></div>
+                <div class="form-group"><label for="semesterCredits">Credits</label><input id="semesterCredits" type="number" min="1" max="40" required value="15"></div>
+                <div class="full"><button type="submit">Add Semester</button></div>
+            </form>
+            <p class="small" style="margin-top:12px">Weighted CGPA = Total (GPA × Credits) ÷ Total Credits.</p>
+        </div>
+        <div class="panel">
+            <div class="stat-label">Calculated CGPA</div>
+            <div class="stat-number" id="cgpaValue">3.70</div>
+            <p class="small" id="cgpaCredits">Based on sample semester data.</p>
+            <button class="secondary" style="margin-top:15px" onclick="resetCgpa()">Reset Calculator</button>
+        </div>
+    </div>
+    <h2 class="heading">Semester Results</h2>
+    <div class="panel table-wrap">
+        <table><thead><tr><th>Semester</th><th>GPA</th><th>Credits</th><th>Action</th></tr></thead><tbody id="cgpaRows"></tbody></table>
+    </div>
+    <h2 class="heading">Course Results (Sample)</h2>
+    <div class="panel table-wrap">
+        <table><thead><tr><th>Course</th><th>Credit</th><th>Grade</th><th>Grade Point</th></tr></thead>
+        <tbody>
+            <tr><td>Web Technology</td><td>3</td><td>A-</td><td>3.70</td></tr>
+            <tr><td>Database Management</td><td>3</td><td>A</td><td>3.75</td></tr>
+            <tr><td>Computer Networks</td><td>3</td><td>B+</td><td>3.30</td></tr>
+        </tbody></table>
+    </div>
+</section>
+
+<!-- ATTENDANCE -->
+<section id="attendance" class="page">
+    <h2 class="heading">Attendance Overview</h2>
+    <div class="grid" id="attendanceStats"></div>
+    <div class="panel table-wrap">
+        <table><thead><tr><th>Course</th><th>Attended</th><th>Total Classes</th><th>Attendance</th><th>Progress</th></tr></thead><tbody id="attendanceRows"></tbody></table>
+    </div>
+    <p class="small" style="margin-top:12px">Attendance figures are sample data. Your actual attendance must come from the university system.</p>
+</section>
+
+<!-- ROUTINE -->
+<section id="routine" class="page">
+    <h2 class="heading">Class Routine / Timetable</h2>
+    <div class="toolbar"><select id="dayFilter" onchange="renderRoutine()"><option value="All">All Days</option><option>Sunday</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option></select></div>
+    <div class="panel table-wrap"><table><thead><tr><th>Day</th><th>Time</th><th>Course</th><th>Room</th><th>Type</th></tr></thead><tbody id="routineRows"></tbody></table></div>
+    <p class="small" style="margin-top:12px">Example timetable only. Replace it with your official class routine.</p>
+</section>
+
+<!-- STUDY MATERIALS -->
+<section id="materials" class="page">
+    <h2 class="heading">Study Materials / Lecture Notes</h2>
+    <div class="toolbar"><input id="materialSearch" placeholder="Search study materials..." oninput="renderMaterials()"><select id="materialFilter" onchange="renderMaterials()"><option value="All">All Courses</option><option>Web Technology</option><option>Database Management</option><option>Programming</option><option>Networking</option></select></div>
+    <div class="panel table-wrap"><table><thead><tr><th>Resource</th><th>Course</th><th>Type</th><th>Resource Link</th></tr></thead><tbody id="materialRows"></tbody></table></div>
+    <p class="small" style="margin-top:12px">Replace example links with actual instructor-uploaded PDFs, slides and books.</p>
+</section>
+
+<!-- NOTICE BOARD -->
+<section id="notices" class="page">
+    <h2 class="heading">Notice Board / Announcements</h2>
+    <div class="toolbar"><input id="noticeSearch" placeholder="Search notices..." oninput="renderNotices()"></div>
+    <div id="noticeList"></div>
+</section>
+
+<!-- DISCUSSION FORUM -->
+<section id="forum" class="page">
+    <h2 class="heading">Discussion Forum / Q&A</h2>
+    <div class="panel">
+        <form id="forumForm" class="form-grid">
+            <div class="form-group"><label for="forumName">Your Name</label><input id="forumName" value="Papia Akter" required></div>
+            <div class="form-group"><label for="forumCourse">Course</label><select id="forumCourse"><option>Web Technology</option><option>Database Management</option><option>Programming</option><option>Networking</option></select></div>
+            <div class="form-group full"><label for="forumQuestion">Question / Coding Problem</label><textarea id="forumQuestion" rows="3" maxlength="500" required placeholder="Describe your question..."></textarea><span class="small" id="questionCount">0/500</span></div>
+            <div class="full"><button type="submit">Post Question</button></div>
+        </form>
+    </div>
+    <h2 class="heading">Recent Discussions</h2>
+    <div id="forumList"></div>
+</section>
+
+<!-- PROJECT SHOWCASE -->
+<section id="projects" class="page">
+    <h2 class="heading">Project Showcase / Portfolio</h2>
+    <div class="panel">
+        <form id="projectForm" class="form-grid">
+            <div class="form-group"><label for="projectName">Project Name</label><input id="projectName" required placeholder="e.g. Student Management System"></div>
+            <div class="form-group"><label for="projectTech">Technology</label><input id="projectTech" required placeholder="HTML, Java, Python..."></div>
+            <div class="form-group full"><label for="projectDescription">Description</label><textarea id="projectDescription" rows="2" maxlength="300" required></textarea></div>
+            <div class="form-group full"><label for="projectLink">GitHub / Portfolio URL</label><input id="projectLink" type="url" placeholder="https://github.com/username/project"></div>
+            <div class="full"><button type="submit">Add Project</button></div>
+        </form>
+    </div>
+    <h2 class="heading">Student Projects</h2>
+    <div class="grid-2" id="projectList"></div>
+</section>
+
+<!-- STUDY GROUPS -->
+<section id="groups" class="page">
+    <h2 class="heading">Peer Study Groups / Collaboration</h2>
+    <p class="muted">Find classmates for programming practice, exam preparation and group projects.</p>
+    <div class="grid-2" id="groupList" style="margin-top:16px"></div>
+    <h2 class="heading">Create a Study Group</h2>
+    <div class="panel">
+        <form id="groupForm" class="form-grid">
+            <div class="form-group"><label for="groupName">Group Name</label><input id="groupName" required></div>
+            <div class="form-group"><label for="groupTopic">Study Topic</label><input id="groupTopic" required placeholder="e.g. Python Programming"></div>
+            <div class="full"><button type="submit">Create Group</button></div>
+        </form>
+    </div>
+</section>
+
+<!-- EVENTS -->
+<section id="events" class="page">
+    <h2 class="heading">Events & Workshops</h2>
+    <div class="grid-2" id="eventList"></div>
+    <p class="small" style="margin-top:12px">Event details are examples. Confirm dates and registration details with the university.</p>
+</section>
+
+</div>
+<footer>© 2026 BUP LMS | Student Learning Portal</footer>
+</main>
+</div>
+
+<!-- COURSE DETAILS MODAL / POPUP -->
+<div class="modal-overlay" id="courseModal" onclick="closeCourseModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="forceCloseModal()">✕</button>
+        <div id="modalContent"></div>
+    </div>
+</div>
+
+<script>
+// ---------------- STUDENT DATA LIST ----------------
+const studentsData = {
+  "ST-101": {
+    name: "Papia Akter",
+    department: "ICT",
+    currentSemester: "Semester 5",
+    cgpa: "3.70",
+    attendance: "88%",
+    enrolledCourses: 4
+  },
+  "ST-102": {
+    name: "Tanvir Ahmed",
+    department: "CSE",
+    currentSemester: "Semester 3",
+    cgpa: "3.85",
+    attendance: "92%",
+    enrolledCourses: 5
+  }
+};
+
+let activeStudentId = "ST-101";
+
+// Get LMS system data from LocalStorage
+function getSystemData() {
+    try {
+        const savedFaculty = localStorage.getItem("facultyLMSData");
+        const savedSystem = localStorage.getItem("systemLMSData");
+        
+        let facultyData = savedFaculty ? JSON.parse(savedFaculty) : null;
+        let systemData = savedSystem ? JSON.parse(savedSystem) : { notifications: [] };
+        
+        let combinedNotifications = [];
+        
+        // Merge Faculty Notifications
+        if (facultyData && facultyData.notifications) {
+            facultyData.notifications.forEach(n => {
+                const c = facultyData.courses ? facultyData.courses.find(item => item.id === n.courseId) : null;
+                combinedNotifications.push({
+                    title: n.title,
+                    text: n.message,
+                    date: n.date ? n.date.split('T')[0] : 'Today',
+                    type: c ? c.name : 'Faculty Update',
+                    source: 'Faculty'
+                });
+            });
+        }
+        
+        // Merge Admin Notifications for Students / All
+        if (systemData && systemData.notifications) {
+            systemData.notifications.forEach(n => {
+                if (n.target === 'all' || n.target === 'student') {
+                    combinedNotifications.push({
+                        title: n.title,
+                        text: n.details,
+                        date: n.date || 'Today',
+                        type: n.type || 'Admin Notice',
+                        source: 'Admin'
+                    });
+                }
+            });
+        }
+
+        return combinedNotifications;
+    } catch(e) {
+        return [];
+    }
+}
+
+// ---------------- SAMPLE DATA WITH LECTURE DETAILS ----------------
+const courses = [
+ {
+   id: 0,
+   name: "Web Technology",
+   code: "ICT-3101",
+   teacher: "Mr. Hasan",
+   progress: 75,
+   lectures: [
+     { lecNo: "Lecture 1", date: "2026-09-01", topic: "HTML5 Semantic Structure & Form Attributes", status: "Completed" },
+     { lecNo: "Lecture 2", date: "2026-09-08", topic: "CSS3 Flexbox Layouts & Responsive Design", status: "Completed" },
+     { lecNo: "Lecture 3", date: "2026-09-15", topic: "JavaScript DOM Manipulation & Event Handlers", status: "Completed" },
+     { lecNo: "Lecture 4", date: "2026-09-22", topic: "Async JS, Fetch API & JSON Data Integration", status: "Completed" },
+     { lecNo: "Lecture 5", date: "2026-10-06", topic: "Node.js & Express Basics for REST APIs", status: "Upcoming" },
+     { lecNo: "Lecture 6", date: "2026-10-13", topic: "Frontend Framework Intro (React.js Components)", status: "Upcoming" }
+   ]
+ },
+ {
+   id: 1,
+   name: "Database Management",
+   code: "ICT-3102",
+   teacher: "Dr. Rahman",
+   progress: 60,
+   lectures: [
+     { lecNo: "Lecture 1", date: "2026-09-03", topic: "Introduction to Relational Databases & ER Diagrams", status: "Completed" },
+     { lecNo: "Lecture 2", date: "2026-09-10", topic: "SQL DDL & DML Commands (CREATE, INSERT, SELECT)", status: "Completed" },
+     { lecNo: "Lecture 3", date: "2026-09-17", topic: "Database Normalization (1NF, 2NF, 3NF & BCNF)", status: "Completed" },
+     { lecNo: "Lecture 4", date: "2026-09-24", topic: "Complex SQL Joins, Subqueries & Views", status: "Completed" },
+     { lecNo: "Lecture 5", date: "2026-10-08", topic: "Transactions, ACID Properties & Indexing", status: "Upcoming" }
+   ]
+ },
+ {
+   id: 2,
+   name: "Software Engineering",
+   code: "ICT-3103",
+   teacher: "Ms. Sultana",
+   progress: 45,
+   lectures: [
+     { lecNo: "Lecture 1", date: "2026-09-02", topic: "Software Development Life Cycle (SDLC) & Agile", status: "Completed" },
+     { lecNo: "Lecture 2", date: "2026-09-09", topic: "Requirements Engineering & SRS Documentation", status: "Completed" },
+     { lecNo: "Lecture 3", date: "2026-09-16", topic: "UML Modeling (Use Case, Sequence Diagrams)", status: "Completed" },
+     { lecNo: "Lecture 4", date: "2026-09-23", topic: "Software Testing Techniques & Automation", status: "Upcoming" },
+     { lecNo: "Lecture 5", date: "2026-10-07", topic: "Software Design Patterns & Architecture", status: "Upcoming" }
+   ]
+ },
+ {
+   id: 3,
+   name: "Computer Networks",
+   code: "ICT-3104",
+   teacher: "Mr. Karim",
+   progress: 80,
+   lectures: [
+     { lecNo: "Lecture 1", date: "2026-09-04", topic: "OSI Model & TCP/IP Layer Architecture", status: "Completed" },
+     { lecNo: "Lecture 2", date: "2026-09-11", topic: "Physical Layer, Ethernet & Data Link Protocols", status: "Completed" },
+     { lecNo: "Lecture 3", date: "2026-09-18", topic: "IPv4 Addressing, Subnetting & CIDR Notation", status: "Completed" },
+     { lecNo: "Lecture 4", date: "2026-09-25", topic: "Routing Algorithms & Network Layer Protocols", status: "Completed" },
+     { lecNo: "Lecture 5", date: "2026-10-09", topic: "Transport Layer: TCP vs UDP & Congestion Control", status: "Upcoming" }
+   ]
+ }
+];
+
+// ---------------- ALL ASSIGNMENTS CATEGORY-WISE SAMPLE DATA ----------------
+const assignments = [
+ {name:"Portfolio Website", course:"Web Technology", date:"2026-11-10", status:"Due Soon"},
+ {name:"UI/UX Wireframe Prototype", course:"Web Technology", date:"2026-11-12", status:"Due Soon"},
+ {name:"ER Diagram Modeling", course:"Database Management", date:"2026-11-15", status:"Due Soon"},
+ {name:"Database Design Report", course:"Database Management", date:"2026-11-28", status:"Upcoming"},
+ {name:"SRS Specification Sheet", course:"Software Engineering", date:"2026-12-05", status:"Upcoming"},
+ {name:"Packet Tracer Topology Design", course:"Computer Networks", date:"2026-12-12", status:"Upcoming"},
+ {name:"Software Requirements Analysis", course:"Software Engineering", date:"2026-10-10", status:"Completed"},
+ {name:"HTML & CSS Layout Practice", course:"Web Technology", date:"2026-10-08", status:"Completed"},
+ {name:"SQL Basic Queries Lab", course:"Database Management", date:"2026-10-02", status:"Completed"},
+ {name:"Git Version Control Setup", course:"Software Engineering", date:"2026-09-25", status:"Completed"},
+ {name:"Network Lab Report", course:"Computer Networks", date:"2026-10-12", status:"Overdue"},
+ {name:"Use Case & Activity Diagrams", course:"Software Engineering", date:"2026-10-20", status:"Overdue"}
+];
+
+const notices = [
+ {title:"Examination Notice",text:"Check the official university portal for updated examination dates and deadlines.",date:"2026-10-16",type:"Urgent"},
+ {title:"Departmental Seminar",text:"Students are encouraged to participate in upcoming ICT seminars and academic activities.",date:"2026-10-15",type:"Department"},
+ {title:"Assignment Reminder",text:"Review your LMS assignment deadlines and submit pending work on time.",date:"2026-10-14",type:"Academic"}
+];
+
+const routine = [
+ {day:"Sunday",time:"09:00 - 10:30",course:"Web Technology",room:"Lab-2",type:"Lab"},
+ {day:"Sunday",time:"11:00 - 12:30",course:"Database Management",room:"C-203",type:"Lecture"},
+ {day:"Monday",time:"10:00 - 11:30",course:"Software Engineering",room:"C-204",type:"Lecture"},
+ {day:"Tuesday",time:"09:00 - 10:30",course:"Computer Networks",room:"Lab-1",type:"Lab"},
+ {day:"Wednesday",time:"11:00 - 12:30",course:"Database Management",room:"C-203",type:"Lecture"},
+ {day:"Thursday",time:"10:00 - 11:30",course:"Web Technology",room:"Lab-2",type:"Lab"}
+];
+
+const materials = [
+ {name:"HTML and CSS Lecture Notes",course:"Web Technology",type:"PDF",url:"https://developer.mozilla.org/en-US/docs/Learn_web_development"},
+ {name:"JavaScript Guide",course:"Web Technology",type:"Online Guide",url:"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide"},
+ {name:"SQL Tutorial",course:"Database Management",type:"Online Guide",url:"https://www.w3schools.com/sql/"},
+ {name:"Python Tutorial",course:"Programming",type:"Online Guide",url:"https://docs.python.org/3/tutorial/"},
+ {name:"C++ Reference",course:"Programming",type:"Reference",url:"https://en.cppreference.com/w/"},
+ {name:"Networking Fundamentals",course:"Networking",type:"Online Guide",url:"https://www.cisco.com/"},
+ {name:"Git and GitHub Guide",course:"Programming",type:"Guide",url:"https://docs.github.com/en/get-started"}
+];
+
+const videos = [
+ {name:"C Programming Lab",category:"Programming",topic:"C programming lab for university students"},
+ {name:"C++ Programming Practice",category:"Programming",topic:"C++ programming practical lab tutorial"},
+ {name:"Python Programming Lab",category:"Programming",topic:"Python programming practical for beginners"},
+ {name:"Java Programming Lab",category:"Programming",topic:"Java programming university lab practical"},
+ {name:"Data Structures and Algorithms",category:"Programming",topic:"data structures algorithms lab practical"},
+ {name:"HTML CSS JavaScript Projects",category:"Programming",topic:"HTML CSS JavaScript university practical project"},
+ {name:"SQL and MySQL Lab",category:"Database",topic:"MySQL SQL database lab tutorial"},
+ {name:"MongoDB Practical",category:"Database",topic:"MongoDB CRUD practical tutorial"},
+ {name:"Computer Networking Lab",category:"Networking",topic:"computer networking practical lab Packet Tracer"},
+ {name:"Cisco Packet Tracer",category:"Networking",topic:"Cisco Packet Tracer university lab"},
+ {name:"8086 Microprocessor Lab",category:"Electronics",topic:"8086 microprocessor assembly language lab"},
+ {name:"Digital Electronics Lab",category:"Electronics",topic:"digital electronics university laboratory practical"},
+ {name:"MATLAB Practical",category:"Electronics",topic:"MATLAB engineering laboratory practical"},
+ {name:"Software Engineering Project",category:"Software",topic:"software engineering UML project tutorial"}
+];
+
+const quizBank = {
+ "Programming Basics": [
+  {q:"Which symbol ends a statement in C?",options:[";",":",".",","],answer:0},
+  {q:"Which data type stores a whole number in C?",options:["float","int","char[]","void"],answer:1},
+  {q:"Which loop executes while a condition is true?",options:["if","switch","while","break"],answer:2}
+ ],
+ "Web Technology": [
+  {q:"What does HTML define?",options:["Page structure","Database tables","Network routing","Operating system"],answer:0},
+  {q:"Which language styles a webpage?",options:["SQL","CSS","C","Assembly"],answer:1},
+  {q:"Which keyword declares a block-scoped variable in JavaScript?",options:["dim","define","let","integer"],answer:2}
+ ],
+ "Database & SQL": [
+  {q:"Which SQL command retrieves records?",options:["SELECT","REMOVE","FETCHALL","OPEN"],answer:0},
+  {q:"Which key uniquely identifies a row?",options:["Foreign key","Primary key","Duplicate key","Sort key"],answer:1},
+  {q:"Which command adds a new row?",options:["UPDATE","ALTER","INSERT","DROP"],answer:2}
+ ],
+ "Computer Networks": [
+  {q:"What does IP stand for?",options:["Internet Protocol","Internal Program","Input Port","Information Process"],answer:0},
+  {q:"Which device forwards packets between networks?",options:["Keyboard","Router","Monitor","Compiler"],answer:1},
+  {q:"Which protocol is commonly used for secure web browsing?",options:["FTP","HTTP","HTTPS","Telnet"],answer:2}
+ ]
+};
+
+let quizHistory = [];
+let currentQuiz = null;
+let quizTimer = null;
+let quizSeconds = 0;
+
+let semesterResults = [
+ {name:"Semester 1",gpa:3.58,credits:20},
+ {name:"Semester 2",gpa:3.63,credits:20},
+ {name:"Semester 3",gpa:3.78,credits:20},
+ {name:"Semester 4",gpa:3.70,credits:20},
+ {name:"Semester 5",gpa:3.84,credits:20}
+];
+
+let questions = [
+ {name:"How to solve this recursion problem?",course:"Programming",author:"Alin Das",time:"2 hours ago",replies:5},
+ {name:"Best resources for database design?",course:"Database Management",author:"Nadia Islam",time:"4 hours ago",replies:8},
+ {name:"Project ideas for final year?",course:"Software Engineering",author:"Rahim Ahmed",time:"6 hours ago",replies:12}
+];
+
+let projects = [
+ {name:"Student Management System",tech:"Java, MySQL",description:"A system for managing student records.",url:"https://github.com/"},
+ {name:"Portfolio Website",tech:"HTML, CSS, JavaScript",description:"A personal portfolio and project showcase.",url:"https://github.com/"}
+];
+
+let groups = [
+ {name:"Python Practice Group",topic:"Python Programming",members:8},
+ {name:"Web Development Team",topic:"HTML, CSS and JavaScript",members:5},
+ {name:"Database Study Circle",topic:"SQL and Database Design",members:10}
+];
+
+let events = [
+ {name:"ICT Project Showcase",date:"2026-11-05",place:"University Campus",type:"Project Exhibition"},
+ {name:"Web Development Workshop",date:"2026-11-10",place:"ICT Lab",type:"Workshop"},
+ {name:"Programming Contest",date:"2026-11-15",place:"University Campus",type:"Competition"},
+ {name:"Research Seminar",date:"2026-11-20",place:"Seminar Room",type:"Seminar"}
+];
+
+let registeredEvents = [];
+let joinedGroups = [];
+let attendanceData = [
+ {course:"Web Technology",attended:12,total:14},
+ {course:"Database Management",attended:11,total:12},
+ {course:"Software Engineering",attended:10,total:12},
+ {course:"Computer Networks",attended:11,total:12}
+];
+
+// ---------------- NAVIGATION ----------------
+const pageNames = {
+ home:"Student Dashboard",courses:"My Courses",assignments:"Assignments",
+ quiz:"Online Quiz",lab:"Lab Video Library",results:"Results & CGPA",
+ attendance:"Attendance",routine:"Class Routine",materials:"Study Materials",
+ notices:"Notice Board",forum:"Discussion Forum",projects:"Project Showcase",
+ groups:"Study Groups",events:"Events & Workshops"
+};
+
+document.querySelectorAll('#navigation a[data-page]').forEach(link => {
+ link.addEventListener('click', function(e) {
+  e.preventDefault();
+  openPage(this.dataset.page);
+ });
+});
+
+function openPage(id) {
+ if (!pageNames[id]) return;
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('#navigation a').forEach(a=>a.classList.toggle('active',a.dataset.page===id));
+ document.getElementById('globalSearch').value='';
+ window.location.hash=id;
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+
+document.getElementById('globalSearch').addEventListener('keydown',function(e){
+ if(e.key==='Enter'){
+  const q=this.value.trim().toLowerCase();
+  const targets=[
+   ['courses','courseList'],['assignments','assignmentRows'],
+   ['materials','materialRows'],['notices','noticeList'],
+   ['lab','videoList'],['projects','projectList']
+  ];
+  const found=targets.find(item=>document.getElementById(item[1]).textContent.toLowerCase().includes(q));
+  if(found&&q) openPage(found[0]);
+  else if(q) alert('No matching item found in the current sample data.');
+ }
+});
+
+// ---------------- DASHBOARD ----------------
+function renderHome(){
+ const currentStudent = studentsData[activeStudentId];
+
+ if (currentStudent) {
+    document.getElementById('userName').textContent = currentStudent.name;
+    document.getElementById('userFirstName').textContent = currentStudent.name.split(' ')[0];
+    document.getElementById('userDepartment').textContent = currentStudent.department;
+    document.getElementById('userDeptSub').textContent = `${currentStudent.department} Student`;
+
+    document.getElementById('homeEnrolledCourses').textContent = currentStudent.enrolledCourses;
+    document.getElementById('homeCurrentSemester').textContent = currentStudent.currentSemester;
+    document.getElementById('homeCgpa').textContent = currentStudent.cgpa;
+    document.getElementById('homeAttendance').textContent = currentStudent.attendance;
+ }
+
+ const pending=assignments.filter(a=>a.status!=='Completed').length;
+ document.getElementById('homePending').textContent=pending;
+ document.getElementById('homeAssignments').innerHTML=assignments.slice(0,4).map(a=>
+  '<div class="item"><strong>'+esc(a.name)+'</strong><p class="muted">'+esc(a.course)+' · '+esc(a.date)+'</p><span class="badge '+statusClass(a.status)+'">'+esc(a.status)+'</span></div>'
+ ).join('');
+ document.getElementById('homeProgress').innerHTML=courses.map(c=>
+  '<div class="item"><strong>'+esc(c.name)+'</strong><div class="progress"><div style="width:'+c.progress+'%"></div></div><p class="small">'+c.progress+'% complete</p></div>'
+ ).join('');
+ 
+ // Combined notices (Static + Dynamic Faculty/Admin updates)
+ const systemNotices = getSystemData();
+ const allNotices = [...systemNotices, ...notices];
+
+ document.getElementById('homeNotices').innerHTML=allNotices.slice(0,4).map(n=>
+  '<div class="notice '+(n.source==='Admin'?'admin-notice':(n.type==='Urgent'?'urgent':''))+'"><strong>'+esc(n.title)+'</strong> '+(n.source ? '<span class="badge '+(n.source==='Admin'?'admin':'upcoming')+'">'+esc(n.source)+'</span>' : '')+'<br>'+esc(n.text)+'<br><span class="small">'+esc(n.date)+'</span></div>'
+ ).join('');
+
+ document.getElementById('homeRoutine').innerHTML=routine.slice(0,3).map(r=>
+  '<div class="item"><strong>'+esc(r.time)+'</strong><p>'+esc(r.course)+' · '+esc(r.room)+'</p><span class="small">'+esc(r.day)+'</span></div>'
+ ).join('');
+ document.getElementById('homeEvents').innerHTML=events.slice(0,3).map(ev=>
+  '<div class="item"><strong>'+esc(ev.name)+'</strong><p>'+esc(ev.date)+' · '+esc(ev.place)+'</p></div>'
+ ).join('');
+}
+
+function statusClass(status){
+ return status==='Completed'?'':status==='Due Soon'?'due':status==='Overdue'?'overdue':'upcoming';
+}
+
+// ---------------- COURSES ----------------
+function renderCourses(){
+ const q=(document.getElementById('courseSearch').value||'').toLowerCase();
+ document.getElementById('courseList').innerHTML=courses.filter(c=>(c.name+' '+c.teacher+' '+c.code).toLowerCase().includes(q)).map(c=>
+  '<div class="card"><h3>'+esc(c.name)+'</h3><p class="small">'+esc(c.code)+' · '+esc(c.teacher)+'</p><div class="progress"><div style="width:'+c.progress+'%"></div></div><p class="small">'+c.progress+'% course progress</p><button onclick="openCourseDetails('+c.id+')">Open Course</button></div>'
+ ).join('')||'<p class="empty">No courses found.</p>';
+}
+
+// ---------------- COURSE DETAILS MODAL LOGIC ----------------
+function openCourseDetails(courseId) {
+  const course = courses.find(c => c.id === courseId);
+  if (!course) return;
+
+  let modalHtml = `
+    <h2 style="font-size:22px;margin-bottom:4px;color:var(--navy);">${esc(course.name)}</h2>
+    <p class="small" style="margin-bottom:15px">${esc(course.code)} · Instructor: <strong>${esc(course.teacher)}</strong></p>
+    
+    <div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
+        <span>Overall Progress</span>
+        <strong>${course.progress}%</strong>
+      </div>
+      <div class="progress" style="margin:0;"><div style="width:${course.progress}%"></div></div>
+    </div>
+
+    <h3 style="font-size:16px;margin-bottom:12px;color:var(--text);">Lecture Schedule & Topic Log</h3>
+    <div class="panel table-wrap" style="box-shadow:none;padding:0;border:1px solid var(--border);">
+      <table>
+        <thead>
+          <tr>
+            <th>Lecture</th>
+            <th>Date</th>
+            <th>Topic Covered</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  if (course.lectures && course.lectures.length > 0) {
+    course.lectures.forEach(lec => {
+      const badgeClass = lec.status === 'Completed' ? 'badge' : 'badge upcoming';
+      modalHtml += `
+        <tr>
+          <td><strong>${esc(lec.lecNo)}</strong></td>
+          <td><span class="small">${esc(lec.date)}</span></td>
+          <td>${esc(lec.topic)}</td>
+          <td><span class="${badgeClass}">${esc(lec.status)}</span></td>
+        </tr>
+      `;
+    });
+  } else {
+    modalHtml += `<tr><td colspan="4" class="empty">No lecture schedule uploaded yet.</td></tr>`;
+  }
+
+  modalHtml += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  document.getElementById('modalContent').innerHTML = modalHtml;
+  document.getElementById('courseModal').classList.add('active');
+}
+
+function closeCourseModal(e) {
+  if (e.target.id === 'courseModal') {
+    document.getElementById('courseModal').classList.remove('active');
+  }
+}
+
+function forceCloseModal() {
+  document.getElementById('courseModal').classList.remove('active');
+}
+
+// ---------------- ASSIGNMENTS RENDER & FILTER LOGIC ----------------
+function renderAssignments(){
+ const q=(document.getElementById('assignmentSearch').value||'').toLowerCase();
+ const filter=document.getElementById('assignmentFilter').value;
+ const counts=['Completed','Due Soon','Upcoming','Overdue'].map(s=>({name:s,count:assignments.filter(a=>a.status===s).length}));
+ 
+ document.getElementById('assignmentStats').innerHTML=counts.map(c=>
+  '<div class="card"><div class="stat-label">'+c.name+'</div><div class="stat-number">'+c.count+'</div></div>'
+ ).join('');
+
+ const rows=assignments.filter(a=>(filter==='All'||a.status===filter)&&(a.name+' '+a.course).toLowerCase().includes(q));
+ 
+ document.getElementById('assignmentRows').innerHTML=rows.map(a=>{
+  const i=assignments.indexOf(a);
+  return '<tr><td>'+esc(a.name)+'</td><td>'+esc(a.course)+'</td><td>'+esc(a.date)+'</td><td><span class="badge '+statusClass(a.status)+'">'+esc(a.status)+'</span></td><td>'+(a.status!=='Completed'?'<button onclick="completeAssignment('+i+')">Mark Done</button>':'<span class="small">Submitted</span>')+'</td></tr>';
+ }).join('')||'<tr><td colspan="5">No assignments found.</td></tr>';
+}
+
+function completeAssignment(i){
+ assignments[i].status='Completed';
+ renderAssignments();
+ renderHome();
+}
+
+// ---------------- QUIZ ----------------
+function renderQuizzes(){
+ document.getElementById('quizList').innerHTML=Object.keys(quizBank).map(name=>
+  '<div class="card"><h3>'+esc(name)+'</h3><p class="small">'+quizBank[name].length+' MCQs · Practice quiz</p><p style="margin:15px 0"><span class="badge upcoming">Self practice</span></p><button onclick="startQuiz('+JSON.stringify(name).replace(/"/g,'&quot;')+')">Start Quiz</button></div>'
+ ).join('');
+ document.getElementById('quizHistory').innerHTML=quizHistory.length?quizHistory.map(h=>'<div class="item">'+esc(h.name)+' — <strong>'+h.score+'/'+h.total+'</strong></div>').join(''):'No quizzes completed yet.';
+}
+function startQuiz(name){
+ clearInterval(quizTimer);
+ currentQuiz={name:name,questions:quizBank[name],index:0,answers:[],finished:false};
+ quizSeconds=currentQuiz.questions.length*30;
+ document.getElementById('quizArea').style.display='block';
+ renderQuizQuestion();
+ quizTimer=setInterval(()=>{
+  quizSeconds--;
+  const timer=document.getElementById('quizTimer');
+  if(timer)timer.textContent=quizSeconds+' seconds remaining';
+  if(quizSeconds<=0)finishQuiz();
+ },1000);
+ document.getElementById('quizArea').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderQuizQuestion(){
+ const q=currentQuiz.questions[currentQuiz.index];
+ document.getElementById('quizArea').innerHTML=
+  '<h3>'+esc(currentQuiz.name)+'</h3><p class="small" id="quizTimer">'+quizSeconds+' seconds remaining</p>'+
+  '<p style="margin:18px 0"><strong>Question '+(currentQuiz.index+1)+' of '+currentQuiz.questions.length+'</strong><br><br>'+esc(q.q)+'</p>'+
+  q.options.map((o,i)=>'<label class="quiz-option"><input type="radio" name="answer" value="'+i+'">'+esc(o)+'</label>').join('')+
+  '<button onclick="nextQuestion()">'+(currentQuiz.index===currentQuiz.questions.length-1?'Finish Quiz':'Next Question')+'</button>';
+}
+function nextQuestion(){
+ const selected=document.querySelector('input[name="answer"]:checked');
+ currentQuiz.answers[currentQuiz.index]=selected?Number(selected.value):-1;
+ if(currentQuiz.index<currentQuiz.questions.length-1){currentQuiz.index++;renderQuizQuestion();}
+ else finishQuiz();
+}
+function finishQuiz(){
+ if(!currentQuiz||currentQuiz.finished)return;
+ clearInterval(quizTimer);
+ currentQuiz.finished=true;
+ const score=currentQuiz.questions.filter((q,i)=>q.answer===currentQuiz.answers[i]).length;
+ quizHistory.unshift({name:currentQuiz.name,score:score,total:currentQuiz.questions.length});
+ document.getElementById('quizArea').innerHTML='<h3>Quiz Completed!</h3><div class="result-box">Your score: <strong>'+score+'/'+currentQuiz.questions.length+'</strong><p style="margin-top:8px">Percentage: '+Math.round(score/currentQuiz.questions.length*100)+'%</p></div><button style="margin-top:15px" onclick="startQuiz('+JSON.stringify(currentQuiz.name).replace(/"/g,'&quot;')+')">Try Again</button>';
+ renderQuizzes();
+}
+
+// ---------------- LAB VIDEOS ----------------
+function renderVideos(){
+ const q=(document.getElementById('videoSearch').value||'').toLowerCase();
+ const category=document.getElementById('videoFilter').value;
+ document.getElementById('videoList').innerHTML=videos.filter(v=>(category==='All'||v.category===category)&&(v.name+' '+v.topic+' '+v.category).toLowerCase().includes(q)).map(v=>
+  '<div class="card"><h3>▶ '+esc(v.name)+'</h3><p class="small">'+esc(v.category)+' · Practical tutorial search</p><p style="margin-top:15px"><a class="btn" target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/results?search_query='+encodeURIComponent(v.topic)+'">Find Lab Videos</a></p></div>'
+ ).join('')||'<p class="empty">No videos found.</p>';
+}
+
+// ---------------- CGPA ----------------
+function renderCgpa(){
+ document.getElementById('cgpaRows').innerHTML=semesterResults.map((s,i)=>
+  '<tr><td>'+esc(s.name)+'</td><td>'+s.gpa.toFixed(2)+'</td><td>'+s.credits+'</td><td><button class="danger" onclick="deleteSemester('+i+')">Remove</button></td></tr>'
+ ).join('');
+ const totalCredits=semesterResults.reduce((sum,s)=>sum+s.credits,0);
+ const totalPoints=semesterResults.reduce((sum,s)=>sum+s.gpa*s.credits,0);
+ const cgpa=totalCredits?totalPoints/totalCredits:0;
+ document.getElementById('cgpaValue').textContent=cgpa.toFixed(2);
+ document.getElementById('cgpaCredits').textContent=totalCredits+' total credits used in this calculation.';
+}
+document.getElementById('cgpaForm').addEventListener('submit',function(e){
+ e.preventDefault();
+ const name=document.getElementById('semesterName').value.trim();
+ const gpa=Number(document.getElementById('semesterGpa').value);
+ const credits=Number(document.getElementById('semesterCredits').value);
+ if(gpa<0||gpa>4||credits<=0){alert('Enter a GPA between 0 and 4 and valid credits.');return;}
+ semesterResults.push({name:name,gpa:gpa,credits:credits});
+ this.reset();renderCgpa();
+});
+function deleteSemester(i){if(confirm('Remove this semester from the calculator?')){semesterResults.splice(i,1);renderCgpa();}}
+function resetCgpa(){if(confirm('Reset to the original sample semester data?')){semesterResults=[{name:"Semester 1",gpa:3.58,credits:20},{name:"Semester 2",gpa:3.63,credits:20},{name:"Semester 3",gpa:3.78,credits:20},{name:"Semester 4",gpa:3.70,credits:20},{name:"Semester 5",gpa:3.84,credits:20}];renderCgpa();}}
+
+// ---------------- ATTENDANCE ----------------
+function renderAttendance(){
+ const attended=attendanceData.reduce((s,a)=>s+a.attended,0);
+ const total=attendanceData.reduce((s,a)=>s+a.total,0);
+ const percent=total?Math.round(attended/total*100):0;
+ document.getElementById('attendanceStats').innerHTML=
+  '<div class="card"><div class="stat-label">Overall Attendance</div><div class="stat-number">'+percent+'%</div></div>'+
+  '<div class="card"><div class="stat-label">Classes Attended</div><div class="stat-number">'+attended+'/'+total+'</div></div>';
+ document.getElementById('attendanceRows').innerHTML=attendanceData.map(a=>{
+  const p=Math.round(a.attended/a.total*100);
+  return '<tr><td>'+esc(a.course)+'</td><td>'+a.attended+'</td><td>'+a.total+'</td><td>'+p+'%</td><td><div class="progress"><div style="width:'+p+'%"></div></div></td></tr>';
+ }).join('');
+}
+
+// ---------------- ROUTINE ----------------
+function renderRoutine(){
+ const day=document.getElementById('dayFilter').value;
+ document.getElementById('routineRows').innerHTML=routine.filter(r=>day==='All'||r.day===day).map(r=>
+  '<tr><td>'+esc(r.day)+'</td><td>'+esc(r.time)+'</td><td>'+esc(r.course)+'</td><td>'+esc(r.room)+'</td><td>'+esc(r.type)+'</td></tr>'
+ ).join('')||'<tr><td colspan="5">No classes in this selection.</td></tr>';
+}
+
+// ---------------- MATERIALS ----------------
+function renderMaterials(){
+ const q=(document.getElementById('materialSearch').value||'').toLowerCase();
+ const filter=document.getElementById('materialFilter').value;
+ document.getElementById('materialRows').innerHTML=materials.filter(m=>(filter==='All'||m.course===filter)&&(m.name+' '+m.course+' '+m.type).toLowerCase().includes(q)).map(m=>
+  '<tr><td>'+esc(m.name)+'</td><td>'+esc(m.course)+'</td><td>'+esc(m.type)+'</td><td><a href="'+esc(m.url)+'" target="_blank" rel="noopener noreferrer">Open Resource ↗</a></td></tr>'
+ ).join('')||'<tr><td colspan="4">No resources found.</td></tr>';
+}
+
+// ---------------- NOTICES ----------------
+function renderNotices(){
+ const q=(document.getElementById('noticeSearch')?.value||'').toLowerCase();
+ const systemNotices = getSystemData();
+ const allNotices = [...systemNotices, ...notices];
+
+ document.getElementById('noticeList').innerHTML=allNotices.filter(n=>(n.title+' '+n.text+' '+(n.type||'')).toLowerCase().includes(q)).map(n=>
+  '<div class="notice '+(n.source==='Admin'?'admin-notice':(n.type==='Urgent'?'urgent':''))+'"><strong>'+esc(n.title)+'</strong> '+(n.source ? '<span class="badge '+(n.source==='Admin'?'admin':'upcoming')+'">'+esc(n.source)+'</span>' : '')+'<p style="margin:7px 0">'+esc(n.text)+'</p><span class="small">'+esc(n.type||'Notice')+' · '+esc(n.date)+'</span></div>'
+ ).join('')||'<p class="empty">No notices found.</p>';
+}
+
+// ---------------- DISCUSSION FORUM ----------------
+function renderForum(){
+ document.getElementById('forumList').innerHTML=questions.map(q=>
+  '<div class="panel" style="margin-bottom:12px"><span class="badge upcoming">'+esc(q.course)+'</span><h3 style="margin-top:12px">'+esc(q.name)+'</h3><p class="small">Posted by '+esc(q.author)+' · '+esc(q.time)+'</p><p style="margin:12px 0;font-size:13px">Replies: '+q.replies+'</p><button class="secondary" onclick="replyQuestion()">Discuss</button></div>'
+ ).join('');
+}
+document.getElementById('questionCount').textContent='0/500';
+document.getElementById('forumQuestion').addEventListener('input',function(){document.getElementById('questionCount').textContent=this.value.length+'/500';});
+document.getElementById('forumForm').addEventListener('submit',function(e){
+ e.preventDefault();
+ questions.unshift({name:document.getElementById('forumQuestion').value.trim(),course:document.getElementById('forumCourse').value,author:document.getElementById('forumName').value.trim(),time:'Just now',replies:0});
+ this.reset();document.getElementById('forumName').value='Papia Akter';document.getElementById('questionCount').textContent='0/500';renderForum();
+ alert('Question posted in this demo forum.');
+});
+function replyQuestion(){alert('Demo forum: connect a backend to enable real replies and discussions.');}
+
+// ---------------- PROJECT SHOWCASE ----------------
+function renderProjects(){
+ document.getElementById('projectList').innerHTML=projects.map(p=>
+  '<div class="card"><h3>'+esc(p.name)+'</h3><p class="small">'+esc(p.tech)+'</p><p style="font-size:13px;line-height:1.6;margin:12px 0">'+esc(p.description)+'</p><a href="'+esc(p.url)+'" target="_blank" rel="noopener noreferrer">GitHub / Portfolio ↗</a></div>'
+ ).join('');
+}
+document.getElementById('projectForm').addEventListener('submit',function(e){
+ e.preventDefault();
+ const url=document.getElementById('projectLink').value.trim();
+ projects.unshift({name:document.getElementById('projectName').value.trim(),tech:document.getElementById('projectTech').value.trim(),description:document.getElementById('projectDescription').value.trim(),url:url||'https://github.com/'});
+ this.reset();renderProjects();alert('Project added to the demo showcase.');
+});
+
+// ---------------- STUDY GROUPS ----------------
+function renderGroups(){
+ document.getElementById('groupList').innerHTML=groups.map((g,i)=>
+  '<div class="card"><h3>'+esc(g.name)+'</h3><p class="small">'+esc(g.topic)+'</p><p style="margin:12px 0;font-size:13px">'+g.members+' members</p><button '+(joinedGroups.includes(i)?'disabled class="secondary"':'')+' onclick="joinGroup('+i+')">'+(joinedGroups.includes(i)?'Joined':'Join Group')+'</button></div>'
+ ).join('');
+}
+function joinGroup(i){
+ if(joinedGroups.includes(i))return;
+ joinedGroups.push(i);groups[i].members++;renderGroups();alert('Joined the demo study group.');
+}
+document.getElementById('groupForm').addEventListener('submit',function(e){
+ e.preventDefault();
+ groups.unshift({name:document.getElementById('groupName').value.trim(),topic:document.getElementById('groupTopic').value.trim(),members:1});
+ this.reset();joinedGroups=[];renderGroups();alert('Study group created in the demo.');
+});
+
+// ---------------- EVENTS ----------------
+function renderEvents(){
+ document.getElementById('eventList').innerHTML=events.map((ev,i)=>
+  '<div class="card"><span class="badge upcoming">'+esc(ev.type)+'</span><h3 style="margin-top:13px">'+esc(ev.name)+'</h3><p class="small">'+esc(ev.date)+' · '+esc(ev.place)+'</p><button style="margin-top:15px" '+(registeredEvents.includes(i)?'disabled class="secondary"':'')+' onclick="registerEvent('+i+')">'+(registeredEvents.includes(i)?'Registered':'Register Interest')+'</button></div>'
+ ).join('');
+}
+function registerEvent(i){
+ if(registeredEvents.includes(i))return;
+ registeredEvents.push(i);renderEvents();alert('Interest recorded in this demo. This is not an official registration.');
+}
+
+// ---------------- SAFE TEXT OUTPUT ----------------
+function esc(value){
+ return String(value ?? "").replace(/[&<>"']/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+ });
+}
+
+function renderAll() {
+    renderHome();
+    renderCourses();
+    renderAssignments();
+    renderQuizzes();
+    renderVideos();
+    renderCgpa();
+    renderAttendance();
+    renderRoutine();
+    renderMaterials();
+    renderNotices();
+    renderForum();
+    renderProjects();
+    renderGroups();
+    renderEvents();
+}
+
+// ---------------- INITIAL RENDER & REAL-TIME LOCALSTORAGE SYNC ----------------
+renderAll();
+
+window.addEventListener("storage", function(e) {
+    if (e.key === "facultyLMSData" || e.key === "systemLMSData") {
+        renderAll();
+    }
+});
+</script>
+</body>
+</html>

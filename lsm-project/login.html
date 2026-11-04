@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMS - Login</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <div class="form-container">
+        <h2>LMS Login</h2>
+        <form id="loginForm">
+            <label for="email">Email Address:</label>
+            <input type="email" id="email" required placeholder="Enter your email">
+            
+            <label for="password">Password:</label>
+            <input type="password" id="password" required placeholder="Enter password">
+
+            <label for="role">Login As:</label>
+            <select id="role">
+                <option value="student">Student</option>
+                <option value="faculty">Faculty</option>
+                <option value="admin">Admin</option>
+            </select>
+
+            <button type="submit">Login</button>
+        </form>
+        <p>Don't have an account? <a href="register.html">Register here</a></p>
+    </div>
+
+<script src="api.js"></script>
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const selectedRole = document.getElementById('role').value;
+
+  try {
+    let responseData;
+
+    // Call API helper function if available, or fetch directly
+    if (typeof login === 'function') {
+      responseData = await login(email, password);
+    } else {
+      const res = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Login failed.');
+      }
+      responseData = data;
+    }
+
+    const user = responseData.user || responseData;
+    const token = responseData.token;
+
+    if (token) {
+      localStorage.setItem('token', token);
+    }
+    localStorage.setItem('user', JSON.stringify(user));
+
+    // Normalize roles (database 'teacher' / 'instructor' -> 'faculty')
+    let userRole = (user.role || '').toLowerCase();
+    if (userRole === 'teacher' || userRole === 'instructor') {
+      userRole = 'faculty';
+    }
+
+    // Role validation check
+    if (userRole !== selectedRole) {
+      localStorage.clear();
+      alert(`Role mismatch! This account is registered as "${userRole}", but you selected "${selectedRole}".`);
+      return;
+    }
+
+    // Redirect to matching dashboard page
+    const pages = {
+      student: 'dashboard/student-dashboard.html',
+      faculty: 'dashboard/faculty-dashboard.html',
+      admin: 'dashboard/admin-dashboard.html'
+    };
+
+    if (pages[userRole]) {
+      window.location.href = pages[userRole];
+    } else {
+      alert('Invalid user role assigned to this account.');
+    }
+
+  } catch (err) {
+    console.error('Login error:', err);
+    alert(err.message || 'Unable to log in. Make sure edutrack-backend is running.');
+  }
+});
+</script>
+</body>
+</html>

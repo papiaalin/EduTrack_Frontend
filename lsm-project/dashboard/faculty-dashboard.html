@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faculty Dashboard | University LMS</title>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: Arial, sans-serif; background: #f4f7fc; color: #25334b; }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+.layout { display: flex; min-height: 100vh; }
+.sidebar { width: 245px; background: #172554; color: white; padding: 25px 16px; flex-shrink: 0; }
+.logo { font-size: 22px; font-weight: bold; padding: 8px; margin-bottom: 32px; }
+.logo span { color: #60a5fa; }
+.sidebar h4 { color: #9fb2d7; font-size: 11px; margin: 22px 10px 10px; text-transform: uppercase; letter-spacing: 1px; }
+.nav { display: block; width: 100%; padding: 13px 12px; margin: 4px 0; border: none; border-radius: 8px; color: #dbeafe; background: transparent; text-align: left; font-size: 14px; }
+.nav:hover, .nav.active { background: #3153a5; color: white; }
+.main { flex: 1; min-width: 0; }
+.topbar { background: white; padding: 18px 28px; display: flex; justify-content: space-between; align-items: center; gap: 15px; border-bottom: 1px solid #e5eaf3; }
+.topbar h2 { font-size: 21px; }
+.profile { background: #e7edff; padding: 10px 14px; border-radius: 25px; color: #253f91; font-weight: bold; font-size: 13px; }
+.content { padding: 27px; }
+.welcome { background: linear-gradient(120deg, #2447a5, #547de4); padding: 28px; border-radius: 15px; color: white; margin-bottom: 23px; }
+.welcome h1 { font-size: 26px; margin-bottom: 9px; }
+.welcome p { color: #e1eaff; line-height: 1.6; }
+.grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 23px; }
+.stat, .card { background: white; padding: 21px; border-radius: 12px; border: 1px solid #e7ebf3; box-shadow: 0 3px 12px #17255408; }
+.stat p { font-size: 13px; color: #718096; margin-bottom: 13px; }
+.stat h2 { font-size: 27px; color: #2447a5; }
+.stat small { color: #64748b; }
+.card { margin-bottom: 20px; }
+.card h3 { font-size: 17px; margin-bottom: 17px; }
+.section { display: none; }
+.section.active { display: block; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.course { padding: 15px; border: 1px solid #e7ebf3; border-radius: 10px; margin-bottom: 12px; }
+.course h4 { margin-bottom: 7px; color: #2447a5; }
+.course p { font-size: 13px; color: #64748b; line-height: 1.8; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 7px; }
+.field input, .field select, .field textarea { width: 100%; padding: 11px; border: 1px solid #d9e1ee; border-radius: 7px; background: white; outline-color: #547de4; }
+.field textarea { min-height: 85px; resize: vertical; }
+.btn { border: none; border-radius: 7px; padding: 11px 15px; background: #3159c7; color: white; font-size: 13px; margin: 3px 3px 3px 0; }
+.btn:hover { opacity: 0.88; }
+.btn.green { background: #12805c; }
+.btn.red { background: #dc3545; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 550px; }
+th, td { padding: 13px 10px; text-align: left; border-bottom: 1px solid #e8edf5; }
+th { background: #f6f8fc; color: #52627b; }
+.notice { padding: 13px; border-radius: 8px; background: #eff6ff; margin-bottom: 10px; line-height: 1.6; font-size: 13px; overflow-wrap: anywhere; }
+.notice.admin { background: #f3e8ff; border-left: 3px solid #9333ea; }
+.muted { color: #64748b; font-size: 13px; line-height: 1.7; }
+.empty { padding: 18px; color: #718096; text-align: center; font-size: 13px; }
+.progress { height: 8px; background: #e7edf8; border-radius: 8px; overflow: hidden; margin-top: 8px; }
+.progress div { height: 100%; background: #3159c7; }
+</style>
+</head>
+
+<body>
+
+<div class="layout">
+    <aside class="sidebar">
+        <div class="logo">EduTrack<span>LMS</span></div>
+        <h4>Faculty Workspace</h4>
+        <button class="nav active" onclick="showSection('home',this)">▦ Dashboard</button>
+        <button class="nav" onclick="showSection('courses',this)">▤ My Courses</button>
+        <button class="nav" onclick="showSection('students',this)">♙ Student List</button>
+        <button class="nav" onclick="showSection('attendance',this)">✓ Attendance</button>
+        <button class="nav" onclick="showSection('assignments',this)">▣ Assignments & Marks</button>
+        <button class="nav" onclick="showSection('quizzes',this)">✎ Quiz Management</button>
+        <button class="nav" onclick="showSection('schedule',this)">◷ Class Schedule</button>
+        <button class="nav" onclick="showSection('exams',this)">▤ Exam Planner</button>
+        <button class="nav" onclick="showSection('materials',this)">⇧ Study Materials</button>
+        <button class="nav" onclick="showSection('online',this)">◎ Online Classes</button>
+        <button class="nav" onclick="showSection('notifications',this)">♧ Notifications</button>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <h2 id="pageTitle">Faculty Dashboard</h2>
+            <div class="profile">👨‍🏫 Faculty Panel</div>
+        </header>
+
+        <div class="content">
+
+            <!-- DASHBOARD -->
+            <section id="home" class="section active">
+                <div class="welcome">
+                    <h1>Welcome, Faculty!</h1>
+                    <p>Manage your courses, students, attendance, examinations and online classes from one place.</p>
+                    <p id="today" style="margin-top:8px;"></p>
+                </div>
+
+                <div class="grid">
+                    <div class="stat"><p>My Courses</p><h2 id="courseCount">0</h2><small>Assigned courses</small></div>
+                    <div class="stat"><p>Total Students</p><h2 id="studentCount">0</h2><small>Enrolled students</small></div>
+                    <div class="stat"><p>Assignments</p><h2 id="assignmentCount">0</h2><small>Created assignments</small></div>
+                    <div class="stat"><p>Upcoming Exams</p><h2 id="examCount">0</h2><small>Future exam dates</small></div>
+                </div>
+
+                <div class="two-col">
+                    <div class="card"><h3>My Courses</h3><div id="homeCourses"></div></div>
+                    <div class="card"><h3>Recent Notifications & Admin Alerts</h3><div id="homeNotifications"></div></div>
+                </div>
+            </section>
+
+            <!-- COURSES -->
+            <section id="courses" class="section">
+                <div class="card">
+                    <h3>My Courses</h3>
+                    <div id="courseList" style="margin-top:15px;"></div>
+                </div>
+            </section>
+
+            <!-- STUDENTS -->
+            <section id="students" class="section">
+                <div class="card">
+                    <h3>Student List</h3>
+                    <div class="field">
+                        <label>Filter by Course</label>
+                        <select id="studentCourseFilter" onchange="renderStudents()"><option value="">All Courses</option></select>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Student ID</th><th>Name</th><th>Department</th><th>Email</th><th>Course</th></tr></thead>
+                            <tbody id="studentTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ATTENDANCE -->
+            <section id="attendance" class="section">
+                <div class="card">
+                    <h3>Mark Attendance</h3>
+                    <div class="form-grid">
+                        <div class="field"><label>Course</label><select id="attCourse"></select></div>
+                        <div class="field"><label>Class Date</label><input type="date" id="attDate"></div>
+                    </div>
+                    <button class="btn" onclick="loadAttendance()">Load Students</button>
+                    <div id="attendanceEditor" style="margin-top:20px;"></div>
+                </div>
+                <div class="card">
+                    <h3>Attendance Percentage</h3>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Student</th><th>Course</th><th>Present</th><th>Total Classes</th><th>Percentage</th></tr></thead>
+                            <tbody id="attendanceSummary"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ASSIGNMENTS -->
+            <section id="assignments" class="section">
+                <div class="card">
+                    <h3>Create Assignment</h3>
+                    <form id="assignmentForm">
+                        <div class="form-grid">
+                            <div class="field"><label>Assignment Title</label><input id="assignmentTitle" required></div>
+                            <div class="field"><label>Course</label><select id="assignmentCourse"></select></div>
+                            <div class="field"><label>Deadline</label><input type="datetime-local" id="assignmentDeadline" required></div>
+                            <div class="field"><label>Total Marks</label><input type="number" id="assignmentMarks" min="1" value="10" required></div>
+                        </div>
+                        <div class="field"><label>Instructions</label><textarea id="assignmentDescription"></textarea></div>
+                        <button class="btn">Create Assignment</button>
+                    </form>
+                </div>
+                <div class="card"><h3>Assignment List</h3><div id="assignmentList"></div></div>
+                <div class="card">
+                    <h3>Update Student Marks</h3>
+                    <form id="marksForm">
+                        <div class="form-grid">
+                            <div class="field"><label>Student</label><select id="marksStudent"></select></div>
+                            <div class="field"><label>Course</label><select id="marksCourse"></select></div>
+                            <div class="field"><label>Assessment Name</label><input id="marksTitle" required placeholder="Midterm / Assignment"></div>
+                            <div class="field"><label>Marks Obtained</label><input type="number" id="marksObtained" min="0" required></div>
+                            <div class="field"><label>Total Marks</label><input type="number" id="marksTotal" min="1" value="100" required></div>
+                        </div>
+                        <button class="btn">Save Marks</button>
+                    </form>
+                    <div id="marksList" style="margin-top:20px;"></div>
+                </div>
+            </section>
+
+            <!-- QUIZZES -->
+            <section id="quizzes" class="section">
+                <div class="card">
+                    <h3>Create Quiz</h3>
+                    <form id="quizForm">
+                        <div class="form-grid">
+                            <div class="field"><label>Quiz Title</label><input id="quizTitle" required></div>
+                            <div class="field"><label>Course</label><select id="quizCourse"></select></div>
+                            <div class="field"><label>Start Date & Time</label><input type="datetime-local" id="quizStart" required></div>
+                            <div class="field"><label>End Date & Time</label><input type="datetime-local" id="quizEnd" required></div>
+                            <div class="field"><label>Duration (minutes)</label><input type="number" id="quizDuration" min="1" value="15" required></div>
+                            <div class="field"><label>Total Marks</label><input type="number" id="quizMarks" min="1" value="10" required></div>
+                        </div>
+                        <button class="btn">Create Quiz</button>
+                    </form>
+                </div>
+                <div class="card"><h3>Scheduled Quizzes</h3><div id="quizList"></div></div>
+            </section>
+
+            <!-- CLASS SCHEDULE -->
+            <section id="schedule" class="section">
+                <div class="card">
+                    <h3>Update Class Schedule</h3>
+                    <form id="scheduleForm" style="margin-top:16px;">
+                        <div class="form-grid">
+                            <div class="field"><label>Course</label><select id="scheduleCourse"></select></div>
+                            <div class="field"><label>Class Date</label><input type="date" id="scheduleDate" required></div>
+                            <div class="field"><label>Start Time</label><input type="time" id="scheduleStart" required></div>
+                            <div class="field"><label>End Time</label><input type="time" id="scheduleEnd" required></div>
+                            <div class="field"><label>Room / Location</label><input id="scheduleRoom" required placeholder="Room 301"></div>
+                        </div>
+                        <button class="btn">Save Schedule</button>
+                    </form>
+                </div>
+                <div class="card"><h3>All Scheduled Classes</h3><div id="scheduleList"></div></div>
+            </section>
+
+            <!-- EXAMS -->
+            <section id="exams" class="section">
+                <div class="card">
+                    <h3>Schedule an Exam</h3>
+                    <form id="examForm">
+                        <div class="form-grid">
+                            <div class="field"><label>Exam Name</label><input id="examTitle" required placeholder="Midterm Examination"></div>
+                            <div class="field"><label>Course</label><select id="examCourse"></select></div>
+                            <div class="field"><label>Exam Date</label><input type="date" id="examDate" required></div>
+                            <div class="field"><label>Start Time</label><input type="time" id="examStart" required></div>
+                            <div class="field"><label>End Time</label><input type="time" id="examEnd" required></div>
+                            <div class="field"><label>Room</label><input id="examRoom" required></div>
+                        </div>
+                        <button class="btn">Publish Exam Schedule</button>
+                    </form>
+                </div>
+                <div class="card"><h3>Exam Schedule</h3><div id="examList"></div></div>
+            </section>
+
+            <!-- STUDY MATERIALS -->
+            <section id="materials" class="section">
+                <div class="card">
+                    <h3>Upload Study Materials</h3>
+                    <form id="materialForm">
+                        <div class="form-grid">
+                            <div class="field"><label>Material Title</label><input id="materialTitle" required></div>
+                            <div class="field"><label>Course</label><select id="materialCourse"></select></div>
+                            <div class="field"><label>Select File</label><input type="file" id="materialFile" required accept=".pdf,.ppt,.pptx,.doc,.docx,.txt,.zip"></div>
+                        </div>
+                        <button class="btn">Upload Material</button>
+                    </form>
+                </div>
+                <div class="card"><h3>Uploaded Materials</h3><div id="materialList"></div></div>
+            </section>
+
+            <!-- ONLINE CLASSES -->
+            <section id="online" class="section">
+                <div class="card">
+                    <h3>Create Online Class</h3>
+                    <form id="onlineForm">
+                        <div class="form-grid">
+                            <div class="field"><label>Class Title</label><input id="onlineTitle" required></div>
+                            <div class="field"><label>Course</label><select id="onlineCourse"></select></div>
+                            <div class="field"><label>Platform</label><select id="onlinePlatform"><option>Google Meet</option><option>Zoom</option><option>Microsoft Teams</option></select></div>
+                            <div class="field"><label>Class Date & Time</label><input type="datetime-local" id="onlineDate" required></div>
+                            <div class="field"><label>Meeting Link</label><input type="url" id="onlineLink" required placeholder="https://meet.google.com/..."></div>
+                        </div>
+                        <button class="btn">Publish Online Class</button>
+                    </form>
+                </div>
+                <div class="card"><h3>Online Class Links</h3><div id="onlineList"></div></div>
+            </section>
+
+            <!-- NOTIFICATIONS -->
+            <section id="notifications" class="section">
+                <div class="card">
+                    <h3>Send Course Announcement</h3>
+                    <form id="announcementForm">
+                        <div class="field"><label>Course</label><select id="announcementCourse"></select></div>
+                        <div class="field"><label>Announcement Title</label><input id="announcementTitle" required></div>
+                        <div class="field"><label>Message</label><textarea id="announcementMessage" required></textarea></div>
+                        <button class="btn">Publish Announcement</button>
+                    </form>
+                </div>
+                <div class="card"><h3>Notification History & Admin Notices</h3><div id="notificationList"></div></div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<script>
+const defaultData = {
+    courses: [
+        {id: "C101", name: "Web Technology", department: "ICT"},
+        {id: "C102", name: "Database Management", department: "ICT"},
+        {id: "C103", name: "Software Engineering", department: "ICT"}
+    ],
+    students: [
+        {id: "2024001", name: "Papia Akter", department: "ICT", email: "papia@example.com", courses: ["C101","C102"]},
+        {id: "2024002", name: "Alin Das", department: "ICT", email: "alin@example.com", courses: ["C101","C103"]},
+        {id: "2024003", name: "Nadia Islam", department: "ICT", email: "nadia@example.com", courses: ["C102","C103"]},
+        {id: "2024004", name: "Rahim Ahmed", department: "ICT", email: "rahim@example.com", courses: ["C101","C102","C103"]}
+    ],
+    assignments: [], quizzes: [], schedules: [], exams: [], materials: [], onlineClasses: [], attendance: [], marks: [], notifications: []
+};
+
+let data;
+try {
+    const saved = localStorage.getItem("facultyLMSData");
+    data = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(defaultData));
+} catch (error) {
+    data = JSON.parse(JSON.stringify(defaultData));
+}
+
+function saveData() {
+    localStorage.setItem("facultyLMSData", JSON.stringify(data));
+}
+
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, function(char) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
+    });
+}
+
+function courseName(id) {
+    const course = data.courses.find(c => c.id === id);
+    return course ? course.name : "General Announcement";
+}
+
+function getStudents(courseId) {
+    return data.students.filter(s => s.courses.includes(courseId));
+}
+
+function dateText(value) {
+    if (!value) return "-";
+    return new Date(value).toLocaleString();
+}
+
+function localDate() {
+    const now = new Date();
+    return now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+}
+
+function sendNotification(courseId, title, message) {
+    const recipients = getStudents(courseId);
+    data.notifications.unshift({
+        id: Date.now() + Math.random(),
+        courseId,
+        title,
+        message,
+        date: new Date().toISOString(),
+        recipients: recipients.length
+    });
+    saveData();
+    alert("Notification published and synced across Dashboards!");
+}
+
+function getAdminNotices() {
+    try {
+        const savedSystem = localStorage.getItem("systemLMSData");
+        const systemData = savedSystem ? JSON.parse(savedSystem) : { notifications: [] };
+        return systemData.notifications ? systemData.notifications.filter(n => n.target === 'all' || n.target === 'faculty') : [];
+    } catch(e) {
+        return [];
+    }
+}
+
+function renderCourses() {
+    document.getElementById("courseList").innerHTML = data.courses.map(c => `
+        <div class="course">
+            <h4>${escapeHTML(c.name)}</h4>
+            <p>Course ID: ${escapeHTML(c.id)} | Enrolled: ${getStudents(c.id).length}</p>
+        </div>
+    `).join("");
+    document.getElementById("homeCourses").innerHTML = data.courses.map(c => `
+        <div class="course"><h4>${escapeHTML(c.name)}</h4><p>${getStudents(c.id).length} students</p></div>
+    `).join("");
+}
+
+function renderStudents() {
+    const filter = document.getElementById("studentCourseFilter").value;
+    const students = data.students.filter(s => !filter || s.courses.includes(filter));
+    document.getElementById("studentTable").innerHTML = students.map(s => `
+        <tr>
+            <td>${escapeHTML(s.id)}</td>
+            <td>${escapeHTML(s.name)}</td>
+            <td>${escapeHTML(s.department)}</td>
+            <td>${escapeHTML(s.email)}</td>
+            <td>${s.courses.map(courseName).map(escapeHTML).join(", ")}</td>
+        </tr>
+    `).join("");
+}
+
+function renderAttendance() {
+    const rows = [];
+    data.courses.forEach(course => {
+        getStudents(course.id).forEach(student => {
+            const records = data.attendance.filter(a => a.courseId === course.id && a.studentId === student.id);
+            const present = records.filter(a => a.status === "Present").length;
+            const total = records.length;
+            const percent = total ? Math.round(present / total * 100) : 0;
+            rows.push([
+                escapeHTML(student.name), escapeHTML(course.name), present, total,
+                `${percent}%<div class="progress"><div style="width:${percent}%"></div></div>`
+            ]);
+        });
+    });
+    document.getElementById("attendanceSummary").innerHTML = rows.map(row => `<tr>${row.map(c => `<td>${c}</td>`).join("")}</tr>`).join("");
+}
+
+function loadAttendance() {
+    const courseId = document.getElementById("attCourse").value;
+    const date = document.getElementById("attDate").value;
+    if (!date) return alert("Select date");
+
+    const students = getStudents(courseId);
+    document.getElementById("attendanceEditor").innerHTML = `
+        ${students.map(s => {
+            const existing = data.attendance.find(a => a.courseId === courseId && a.studentId === s.id && a.date === date);
+            return `
+                <div class="course">
+                    <strong>${escapeHTML(s.name)}</strong>
+                    <select id="att_${escapeHTML(s.id)}">
+                        <option ${!existing || existing.status === "Present" ? "selected" : ""}>Present</option>
+                        <option ${existing && existing.status === "Absent" ? "selected" : ""}>Absent</option>
+                    </select>
+                </div>
+            `;
+        }).join("")}
+        <button class="btn green" onclick="saveAttendance('${escapeHTML(courseId)}','${escapeHTML(date)}')">Save Attendance</button>
+    `;
+}
+
+function saveAttendance(courseId, date) {
+    getStudents(courseId).forEach(student => {
+        const status = document.getElementById("att_" + student.id).value;
+        const existing = data.attendance.find(a => a.courseId === courseId && a.studentId === student.id && a.date === date);
+        if (existing) existing.status = status;
+        else data.attendance.push({ courseId, studentId: student.id, date, status });
+    });
+    saveData();
+    sendNotification(courseId, "Attendance Updated", "Attendance updated for date: " + date);
+    renderAll();
+}
+
+function showSection(id, button) {
+    document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    document.querySelectorAll(".nav").forEach(n => n.classList.remove("active"));
+    if (button) button.classList.add("active");
+    renderAll();
+}
+
+function fillCourseSelect(id, includeAll = false) {
+    const select = document.getElementById(id);
+    if (!select) return;
+    select.innerHTML = (includeAll ? '<option value="">All Courses</option>' : '') + 
+        data.courses.map(c => `<option value="${escapeHTML(c.id)}">${escapeHTML(c.name)}</option>`).join("");
+}
+
+function fillStudentSelect() {
+    const select = document.getElementById("marksStudent");
+    if (select) {
+        select.innerHTML = data.students.map(s => `<option value="${escapeHTML(s.id)}">${escapeHTML(s.name)}</option>`).join("");
+    }
+}
+
+function renderNotifications() {
+    const adminNotices = getAdminNotices();
+    
+    let html = data.notifications.map(n => `
+        <div class="notice">
+            <strong>${escapeHTML(n.title)}</strong><br>
+            Course: ${escapeHTML(courseName(n.courseId))}<br>
+            ${escapeHTML(n.message)}<br>
+            <small>${escapeHTML(dateText(n.date))}</small>
+        </div>
+    `).join("");
+
+    let adminHtml = adminNotices.map(a => `
+        <div class="notice admin">
+            <strong>📢 [Admin Notice] ${escapeHTML(a.title)}</strong><br>
+            ${escapeHTML(a.details)}<br>
+            <small>${escapeHTML(a.date)}</small>
+        </div>
+    `).join("");
+
+    document.getElementById("notificationList").innerHTML = (adminHtml + html) || '<div class="empty">No notifications yet.</div>';
+    document.getElementById("homeNotifications").innerHTML = (adminHtml + html) || '<div class="empty">No notifications.</div>';
+}
+
+function renderAll() {
+    ["attCourse", "assignmentCourse", "quizCourse", "scheduleCourse", "examCourse", "materialCourse", "onlineCourse", "announcementCourse", "marksCourse"].forEach(id => fillCourseSelect(id));
+    fillCourseSelect("studentCourseFilter", true);
+    fillStudentSelect();
+    document.getElementById("courseCount").textContent = data.courses.length;
+    document.getElementById("studentCount").textContent = data.students.length;
+    document.getElementById("assignmentCount").textContent = data.assignments.length;
+    document.getElementById("examCount").textContent = data.exams.filter(e => e.date >= localDate()).length;
+    renderCourses();
+    renderStudents();
+    renderAttendance();
+    renderNotifications();
+}
+
+// FORM HANDLERS
+document.getElementById("assignmentForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const assignment = {
+        title: document.getElementById("assignmentTitle").value.trim(),
+        courseId: document.getElementById("assignmentCourse").value,
+        deadline: document.getElementById("assignmentDeadline").value,
+        marks: Number(document.getElementById("assignmentMarks").value),
+        description: document.getElementById("assignmentDescription").value.trim()
+    };
+    data.assignments.push(assignment);
+    saveData();
+    sendNotification(assignment.courseId, "New Assignment: " + assignment.title, "Deadline: " + assignment.deadline);
+    this.reset();
+    renderAll();
+});
+
+document.getElementById("quizForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const quiz = {
+        title: document.getElementById("quizTitle").value.trim(),
+        courseId: document.getElementById("quizCourse").value,
+        start: document.getElementById("quizStart").value,
+        end: document.getElementById("quizEnd").value,
+        duration: Number(document.getElementById("quizDuration").value)
+    };
+    data.quizzes.push(quiz);
+    saveData();
+    sendNotification(quiz.courseId, "New Quiz Scheduled: " + quiz.title, "Starts at: " + quiz.start);
+    this.reset();
+    renderAll();
+});
+
+document.getElementById("examForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const exam = {
+        title: document.getElementById("examTitle").value.trim(),
+        courseId: document.getElementById("examCourse").value,
+        date: document.getElementById("examDate").value,
+        start: document.getElementById("examStart").value,
+        end: document.getElementById("examEnd").value,
+        room: document.getElementById("examRoom").value.trim()
+    };
+    data.exams.push(exam);
+    saveData();
+    sendNotification(exam.courseId, "Exam Published: " + exam.title, "Date: " + exam.date + " | Room: " + exam.room);
+    this.reset();
+    renderAll();
+});
+
+document.getElementById("materialForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const file = document.getElementById("materialFile").files[0];
+    const item = {
+        title: document.getElementById("materialTitle").value.trim(),
+        courseId: document.getElementById("materialCourse").value,
+        fileName: file ? file.name : "Document.pdf",
+        date: new Date().toISOString()
+    };
+    data.materials.push(item);
+    saveData();
+    sendNotification(item.courseId, "New Study Material: " + item.title, "File: " + item.fileName);
+    this.reset();
+    renderAll();
+});
+
+document.getElementById("announcementForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const courseId = document.getElementById("announcementCourse").value;
+    const title = document.getElementById("announcementTitle").value.trim();
+    const message = document.getElementById("announcementMessage").value.trim();
+    sendNotification(courseId, title, message);
+    this.reset();
+    renderAll();
+});
+
+document.getElementById("attDate").value = localDate();
+renderAll();
+
+window.addEventListener("storage", function(e) {
+    if (e.key === "systemLMSData") {
+        renderAll();
+    }
+});
+</script>
+</body>
+</html>

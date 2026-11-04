@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LMS Project - Home</title>
+    <!-- Optional: fonts. The page falls back to system fonts if offline. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Your original stylesheet is left alone so login/register pages keep working.
+         All styling for this page lives below. -->
+    <style>
+        :root {
+            --forest: #0E3B3A;
+            --forest-deep: #082726;
+            --mint: #CFE8DE;
+            --paper: #F4F7F5;
+            --marigold: #F4B23E;
+            --coral: #E2573A;
+            --ink: #12211F;
+            --muted: #5B6B68;
+            --line: #D9E2DE;
+            --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+            --body: "DM Sans", "Segoe UI", system-ui, sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--body);
+            color: var(--ink);
+            background: var(--paper);
+            line-height: 1.6;
+        }
+        a:focus-visible { outline: 3px solid var(--marigold); outline-offset: 3px; border-radius: 6px; }
+
+        /* ---------- Header ---------- */
+        header { background: var(--forest); }
+        nav {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        nav h1 {
+            font-family: var(--display);
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        nav h1::before {
+            content: "";
+            width: 14px; height: 14px;
+            background: var(--marigold);
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+        }
+        nav div { display: flex; align-items: center; gap: 8px; }
+        nav a {
+            color: var(--mint);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 9px 18px;
+            border-radius: 999px;
+            transition: background .2s, color .2s;
+        }
+        nav a:hover { background: rgba(255,255,255,.1); color: #fff; }
+        nav a[href="register.html"] { background: var(--marigold); color: var(--forest-deep); font-weight: 700; }
+        nav a[href="register.html"]:hover { background: #ffc765; color: var(--forest-deep); }
+
+        /* ---------- Hero ---------- */
+        .hero { background: var(--forest); color: #fff; padding: 0 0 120px; position: relative; }
+        .hero::after {
+            content: "";
+            position: absolute; left: 0; right: 0; bottom: -1px; height: 70px;
+            background: var(--paper);
+            clip-path: ellipse(60% 100% at 50% 100%);
+        }
+        .hero-inner {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 56px 24px 0;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 56px;
+            align-items: center;
+        }
+        .hero h2 {
+            font-family: var(--display);
+            font-size: clamp(2.2rem, 5vw, 3.7rem);
+            line-height: 1.05;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            max-width: 15ch;
+        }
+        .hero-copy > p {
+            margin-top: 22px;
+            font-size: 1.15rem;
+            color: var(--mint);
+            max-width: 46ch;
+        }
+        .cta { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; }
+        .cta a {
+            text-decoration: none;
+            font-weight: 700;
+            padding: 14px 28px;
+            border-radius: 999px;
+            transition: transform .15s, background .2s;
+        }
+        .cta .primary { background: var(--marigold); color: var(--forest-deep); }
+        .cta .primary:hover { background: #ffc765; transform: translateY(-2px); }
+        .cta .secondary { color: #fff; border: 1.5px solid rgba(255,255,255,.35); }
+        .cta .secondary:hover { background: rgba(255,255,255,.1); }
+
+        /* ---------- Dashboard preview (the one memorable element) ---------- */
+        .preview {
+            background: #fff;
+            color: var(--ink);
+            border-radius: 20px;
+            padding: 22px;
+            box-shadow: 0 30px 60px -20px rgba(0,0,0,.45);
+            transform: rotate(1.5deg);
+        }
+        .preview-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .preview-top strong { font-family: var(--display); font-size: 1.05rem; }
+        .dots { display: flex; gap: 6px; }
+        .dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--line); display: block; }
+        .course { margin-bottom: 16px; }
+        .course-row { display: flex; justify-content: space-between; font-size: .9rem; font-weight: 500; margin-bottom: 6px; }
+        .course-row span:last-child { color: var(--muted); }
+        .bar { height: 10px; background: var(--paper); border-radius: 999px; overflow: hidden; }
+        .bar b {
+            display: block; height: 100%; width: var(--w);
+            border-radius: 999px;
+            background: var(--forest);
+            animation: fill 1.2s .3s cubic-bezier(.2,.8,.2,1) both;
+        }
+        .bar b.warm { background: var(--marigold); }
+        .bar b.hot { background: var(--coral); }
+        @keyframes fill { from { width: 0; } }
+        .due {
+            margin-top: 20px; padding: 14px 16px;
+            background: var(--paper); border-radius: 12px;
+            border-left: 4px solid var(--coral);
+            font-size: .9rem;
+        }
+        .due strong { display: block; }
+        .due span { color: var(--muted); }
+
+        /* ---------- Features ---------- */
+        .features-wrap { max-width: 1120px; margin: 0 auto; padding: 24px 24px 96px; }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            overflow: hidden;
+        }
+        .card { padding: 40px 32px; transition: background .2s; }
+        .card + .card { border-left: 1px solid var(--line); }
+        .card:hover { background: var(--paper); }
+        .icon {
+            width: 52px; height: 52px; border-radius: 14px;
+            display: grid; place-items: center;
+            margin-bottom: 22px;
+        }
+        .icon svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+        .card:nth-child(1) .icon { background: var(--mint); color: var(--forest); }
+        .card:nth-child(2) .icon { background: #FBE6B8; color: #7A5200; }
+        .card:nth-child(3) .icon { background: #F9D6CD; color: #9B2F18; }
+        .card h3 { font-family: var(--display); font-size: 1.3rem; letter-spacing: -0.01em; margin-bottom: 10px; }
+        .card p { color: var(--muted); }
+
+        footer { text-align: center; padding: 28px 24px 40px; color: var(--muted); font-size: .9rem; border-top: 1px solid var(--line); }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 860px) {
+            .hero-inner { grid-template-columns: 1fr; gap: 44px; }
+            .preview { transform: none; }
+            .features { grid-template-columns: 1fr; }
+            .card + .card { border-left: 0; border-top: 1px solid var(--line); }
+        }
+        @media (max-width: 420px) {
+            nav a { padding: 8px 12px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .bar b { animation: none; }
+            * { transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <h1>EduTrack LMS</h1>
+            <div>
+                <a href="login.html">Login</a>
+                <a href="register.html">Register</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-inner">
+                <div class="hero-copy">
+                    <h2>Welcome to the Best Learning Management System</h2>
+                    <p>Explore the best features of our LMS platform for seamless online learning.</p>
+                    <div class="cta">
+                        <a class="primary" href="register.html">Register</a>
+                        <a class="secondary" href="login.html">Login</a>
+                    </div>
+                </div>
+
+                <aside class="preview" aria-hidden="true">
+                    <div class="preview-top">
+                        <strong>My progress</strong>
+                        <div class="dots"><i></i><i></i><i></i></div>
+                    </div>
+                    <div class="course">
+                        <div class="course-row"><span>Data Structures</span><span>82%</span></div>
+                        <div class="bar"><b style="--w:82%"></b></div>
+                    </div>
+                    <div class="course">
+                        <div class="course-row"><span>Database Systems</span><span>64%</span></div>
+                        <div class="bar"><b class="warm" style="--w:64%"></b></div>
+                    </div>
+                    <div class="course">
+                        <div class="course-row"><span>Web Technologies</span><span>38%</span></div>
+                        <div class="bar"><b class="hot" style="--w:38%"></b></div>
+                    </div>
+                    <div class="due">
+                        <strong>Assignment 3 due Friday</strong>
+                        <span>Database Systems</span>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <div class="features-wrap">
+            <section class="features">
+                <div class="card">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 5.5v16M9 8h7M9 12h5"/></svg>
+                    </div>
+                    <h3>Interactive Courses</h3>
+                    <p>Access well-structured course materials and resources easily.</p>
+                </div>
+                <div class="card">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17.5" cy="9" r="2.4"/><path d="M17 14.2c2.4.2 4 2 4 4.8"/></svg>
+                    </div>
+                    <h3>Role-Based Dashboards</h3>
+                    <p>Dedicated panels for Students, Faculty, and Admin.</p>
+                </div>
+                <div class="card">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M5 16l4-5 4 3 6-8"/><path d="M15 6h4v4"/></svg>
+                    </div>
+                    <h3>Smart Tracking</h3>
+                    <p>Monitor your academic progress and assignments in real time.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>&copy; EduTrack LMS</footer>
+</body>
+</html>
