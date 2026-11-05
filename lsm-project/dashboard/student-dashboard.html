@@ -86,15 +86,13 @@ button:hover, .btn:hover { filter: brightness(.94); }
 .badge.due { background: #fef3c7; color: #92400e; }
 .badge.upcoming { background: #dbeafe; color: #1d4ed8; }
 .badge.overdue { background: #fee2e2; color: #b91c1c; }
-.badge.admin { background: #f3e8ff; color: #6b21a8; }
 table { width: 100%; border-collapse: collapse; min-width: 570px; }
 th, td { text-align: left; padding: 13px; font-size: 13px; border-bottom: 1px solid #edf0f5; }
 th { background: #f1f5f9; color: #475569; }
 .table-wrap { overflow-x: auto; }
-.notice { padding: 15px; border-radius: 9px; background: #eff6ff; margin-bottom: 10px; line-height: 1.6; font-size: 13px; border-left: 4px solid var(--blue); }
-.notice.urgent { background: #fff1f2; border-left-color: #e11d48; }
-.notice.event { background: #f0fdf4; border-left-color: #059669; }
-.notice.admin-notice { background: #faf5ff; border-left-color: #9333ea; }
+.notice { padding: 15px; border-radius: 9px; background: #eff6ff; margin-bottom: 10px; line-height: 1.6; font-size: 13px; }
+.notice.urgent { background: #fff1f2; }
+.notice.event { background: #f0fdf4; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .form-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 7px; }
 .form-group input, .form-group select, .form-group textarea { width: 100%; }
@@ -111,7 +109,6 @@ th { background: #f1f5f9; color: #475569; }
 footer { text-align: center; color: #94a3b8; padding: 22px; font-size: 12px; }
 .empty { color: var(--muted); font-size: 13px; padding: 15px 0; }
 
-/* Modal / Popup Styles */
 .modal-overlay {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(15, 23, 42, 0.65); display: none; align-items: center;
@@ -157,6 +154,19 @@ footer { text-align: center; color: #94a3b8; padding: 22px; font-size: 12px; }
 </head>
 
 <body>
+
+<script>
+  // Session verification
+  const loggedUser = JSON.parse(localStorage.getItem('user'));
+  if (!loggedUser || loggedUser.role !== 'student') {
+    window.location.href = '../login.html';
+  }
+  function logoutUser() {
+    localStorage.clear();
+    window.location.href = '../login.html';
+  }
+</script>
+
 <div class="layout">
 
 <aside class="sidebar">
@@ -178,7 +188,7 @@ footer { text-align: center; color: #94a3b8; padding: 22px; font-size: 12px; }
         <a href="#projects" data-page="projects" onclick="openPage('projects')">⌘ Project Showcase</a>
         <a href="#groups" data-page="groups" onclick="openPage('groups')">♧ Study Groups</a>
         <a href="#events" data-page="events" onclick="openPage('events')">✧ Events & Workshops</a>
-        <a href="../login.html" class="logout">⇥ Logout</a>
+        <a href="#" onclick="logoutUser()" class="logout">⇥ Logout</a>
     </nav>
 </aside>
 
@@ -461,52 +471,6 @@ const studentsData = {
 
 let activeStudentId = "ST-101";
 
-// Get LMS system data from LocalStorage
-function getSystemData() {
-    try {
-        const savedFaculty = localStorage.getItem("facultyLMSData");
-        const savedSystem = localStorage.getItem("systemLMSData");
-        
-        let facultyData = savedFaculty ? JSON.parse(savedFaculty) : null;
-        let systemData = savedSystem ? JSON.parse(savedSystem) : { notifications: [] };
-        
-        let combinedNotifications = [];
-        
-        // Merge Faculty Notifications
-        if (facultyData && facultyData.notifications) {
-            facultyData.notifications.forEach(n => {
-                const c = facultyData.courses ? facultyData.courses.find(item => item.id === n.courseId) : null;
-                combinedNotifications.push({
-                    title: n.title,
-                    text: n.message,
-                    date: n.date ? n.date.split('T')[0] : 'Today',
-                    type: c ? c.name : 'Faculty Update',
-                    source: 'Faculty'
-                });
-            });
-        }
-        
-        // Merge Admin Notifications for Students / All
-        if (systemData && systemData.notifications) {
-            systemData.notifications.forEach(n => {
-                if (n.target === 'all' || n.target === 'student') {
-                    combinedNotifications.push({
-                        title: n.title,
-                        text: n.details,
-                        date: n.date || 'Today',
-                        type: n.type || 'Admin Notice',
-                        source: 'Admin'
-                    });
-                }
-            });
-        }
-
-        return combinedNotifications;
-    } catch(e) {
-        return [];
-    }
-}
-
 // ---------------- SAMPLE DATA WITH LECTURE DETAILS ----------------
 const courses = [
  {
@@ -568,7 +532,6 @@ const courses = [
  }
 ];
 
-// ---------------- ALL ASSIGNMENTS CATEGORY-WISE SAMPLE DATA ----------------
 const assignments = [
  {name:"Portfolio Website", course:"Web Technology", date:"2026-11-10", status:"Due Soon"},
  {name:"UI/UX Wireframe Prototype", course:"Web Technology", date:"2026-11-12", status:"Due Soon"},
@@ -695,7 +658,6 @@ let attendanceData = [
  {course:"Computer Networks",attended:11,total:12}
 ];
 
-// ---------------- NAVIGATION ----------------
 const pageNames = {
  home:"Student Dashboard",courses:"My Courses",assignments:"Assignments",
  quiz:"Online Quiz",lab:"Lab Video Library",results:"Results & CGPA",
@@ -735,15 +697,17 @@ document.getElementById('globalSearch').addEventListener('keydown',function(e){
  }
 });
 
-// ---------------- DASHBOARD ----------------
 function renderHome(){
+ const u = JSON.parse(localStorage.getItem('user'));
  const currentStudent = studentsData[activeStudentId];
 
  if (currentStudent) {
-    document.getElementById('userName').textContent = currentStudent.name;
-    document.getElementById('userFirstName').textContent = currentStudent.name.split(' ')[0];
-    document.getElementById('userDepartment').textContent = currentStudent.department;
-    document.getElementById('userDeptSub').textContent = `${currentStudent.department} Student`;
+    const studentName = u && u.name ? u.name : currentStudent.name;
+    const dept = u && u.department ? u.department : currentStudent.department;
+    document.getElementById('userName').textContent = studentName;
+    document.getElementById('userFirstName').textContent = studentName.split(' ')[0];
+    document.getElementById('userDepartment').textContent = dept;
+    document.getElementById('userDeptSub').textContent = `${dept} Student`;
 
     document.getElementById('homeEnrolledCourses').textContent = currentStudent.enrolledCourses;
     document.getElementById('homeCurrentSemester').textContent = currentStudent.currentSemester;
@@ -759,15 +723,9 @@ function renderHome(){
  document.getElementById('homeProgress').innerHTML=courses.map(c=>
   '<div class="item"><strong>'+esc(c.name)+'</strong><div class="progress"><div style="width:'+c.progress+'%"></div></div><p class="small">'+c.progress+'% complete</p></div>'
  ).join('');
- 
- // Combined notices (Static + Dynamic Faculty/Admin updates)
- const systemNotices = getSystemData();
- const allNotices = [...systemNotices, ...notices];
-
- document.getElementById('homeNotices').innerHTML=allNotices.slice(0,4).map(n=>
-  '<div class="notice '+(n.source==='Admin'?'admin-notice':(n.type==='Urgent'?'urgent':''))+'"><strong>'+esc(n.title)+'</strong> '+(n.source ? '<span class="badge '+(n.source==='Admin'?'admin':'upcoming')+'">'+esc(n.source)+'</span>' : '')+'<br>'+esc(n.text)+'<br><span class="small">'+esc(n.date)+'</span></div>'
+ document.getElementById('homeNotices').innerHTML=notices.slice(0,2).map(n=>
+  '<div class="notice '+(n.type==='Urgent'?'urgent':'')+'"><strong>'+esc(n.title)+'</strong><br>'+esc(n.text)+'<br><span class="small">'+esc(n.date)+'</span></div>'
  ).join('');
-
  document.getElementById('homeRoutine').innerHTML=routine.slice(0,3).map(r=>
   '<div class="item"><strong>'+esc(r.time)+'</strong><p>'+esc(r.course)+' · '+esc(r.room)+'</p><span class="small">'+esc(r.day)+'</span></div>'
  ).join('');
@@ -780,7 +738,6 @@ function statusClass(status){
  return status==='Completed'?'':status==='Due Soon'?'due':status==='Overdue'?'overdue':'upcoming';
 }
 
-// ---------------- COURSES ----------------
 function renderCourses(){
  const q=(document.getElementById('courseSearch').value||'').toLowerCase();
  document.getElementById('courseList').innerHTML=courses.filter(c=>(c.name+' '+c.teacher+' '+c.code).toLowerCase().includes(q)).map(c=>
@@ -788,7 +745,6 @@ function renderCourses(){
  ).join('')||'<p class="empty">No courses found.</p>';
 }
 
-// ---------------- COURSE DETAILS MODAL LOGIC ----------------
 function openCourseDetails(courseId) {
   const course = courses.find(c => c.id === courseId);
   if (!course) return;
@@ -796,7 +752,6 @@ function openCourseDetails(courseId) {
   let modalHtml = `
     <h2 style="font-size:22px;margin-bottom:4px;color:var(--navy);">${esc(course.name)}</h2>
     <p class="small" style="margin-bottom:15px">${esc(course.code)} · Instructor: <strong>${esc(course.teacher)}</strong></p>
-    
     <div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:20px;">
       <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
         <span>Overall Progress</span>
@@ -804,18 +759,10 @@ function openCourseDetails(courseId) {
       </div>
       <div class="progress" style="margin:0;"><div style="width:${course.progress}%"></div></div>
     </div>
-
     <h3 style="font-size:16px;margin-bottom:12px;color:var(--text);">Lecture Schedule & Topic Log</h3>
     <div class="panel table-wrap" style="box-shadow:none;padding:0;border:1px solid var(--border);">
       <table>
-        <thead>
-          <tr>
-            <th>Lecture</th>
-            <th>Date</th>
-            <th>Topic Covered</th>
-            <th>Status</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Lecture</th><th>Date</th><th>Topic Covered</th><th>Status</th></tr></thead>
         <tbody>
   `;
 
@@ -835,12 +782,7 @@ function openCourseDetails(courseId) {
     modalHtml += `<tr><td colspan="4" class="empty">No lecture schedule uploaded yet.</td></tr>`;
   }
 
-  modalHtml += `
-        </tbody>
-      </table>
-    </div>
-  `;
-
+  modalHtml += `</tbody></table></div>`;
   document.getElementById('modalContent').innerHTML = modalHtml;
   document.getElementById('courseModal').classList.add('active');
 }
@@ -855,7 +797,6 @@ function forceCloseModal() {
   document.getElementById('courseModal').classList.remove('active');
 }
 
-// ---------------- ASSIGNMENTS RENDER & FILTER LOGIC ----------------
 function renderAssignments(){
  const q=(document.getElementById('assignmentSearch').value||'').toLowerCase();
  const filter=document.getElementById('assignmentFilter').value;
@@ -879,7 +820,6 @@ function completeAssignment(i){
  renderHome();
 }
 
-// ---------------- QUIZ ----------------
 function renderQuizzes(){
  document.getElementById('quizList').innerHTML=Object.keys(quizBank).map(name=>
   '<div class="card"><h3>'+esc(name)+'</h3><p class="small">'+quizBank[name].length+' MCQs · Practice quiz</p><p style="margin:15px 0"><span class="badge upcoming">Self practice</span></p><button onclick="startQuiz('+JSON.stringify(name).replace(/"/g,'&quot;')+')">Start Quiz</button></div>'
@@ -924,7 +864,6 @@ function finishQuiz(){
  renderQuizzes();
 }
 
-// ---------------- LAB VIDEOS ----------------
 function renderVideos(){
  const q=(document.getElementById('videoSearch').value||'').toLowerCase();
  const category=document.getElementById('videoFilter').value;
@@ -933,7 +872,6 @@ function renderVideos(){
  ).join('')||'<p class="empty">No videos found.</p>';
 }
 
-// ---------------- CGPA ----------------
 function renderCgpa(){
  document.getElementById('cgpaRows').innerHTML=semesterResults.map((s,i)=>
   '<tr><td>'+esc(s.name)+'</td><td>'+s.gpa.toFixed(2)+'</td><td>'+s.credits+'</td><td><button class="danger" onclick="deleteSemester('+i+')">Remove</button></td></tr>'
@@ -956,7 +894,6 @@ document.getElementById('cgpaForm').addEventListener('submit',function(e){
 function deleteSemester(i){if(confirm('Remove this semester from the calculator?')){semesterResults.splice(i,1);renderCgpa();}}
 function resetCgpa(){if(confirm('Reset to the original sample semester data?')){semesterResults=[{name:"Semester 1",gpa:3.58,credits:20},{name:"Semester 2",gpa:3.63,credits:20},{name:"Semester 3",gpa:3.78,credits:20},{name:"Semester 4",gpa:3.70,credits:20},{name:"Semester 5",gpa:3.84,credits:20}];renderCgpa();}}
 
-// ---------------- ATTENDANCE ----------------
 function renderAttendance(){
  const attended=attendanceData.reduce((s,a)=>s+a.attended,0);
  const total=attendanceData.reduce((s,a)=>s+a.total,0);
@@ -970,7 +907,6 @@ function renderAttendance(){
  }).join('');
 }
 
-// ---------------- ROUTINE ----------------
 function renderRoutine(){
  const day=document.getElementById('dayFilter').value;
  document.getElementById('routineRows').innerHTML=routine.filter(r=>day==='All'||r.day===day).map(r=>
@@ -978,7 +914,6 @@ function renderRoutine(){
  ).join('')||'<tr><td colspan="5">No classes in this selection.</td></tr>';
 }
 
-// ---------------- MATERIALS ----------------
 function renderMaterials(){
  const q=(document.getElementById('materialSearch').value||'').toLowerCase();
  const filter=document.getElementById('materialFilter').value;
@@ -987,18 +922,13 @@ function renderMaterials(){
  ).join('')||'<tr><td colspan="4">No resources found.</td></tr>';
 }
 
-// ---------------- NOTICES ----------------
 function renderNotices(){
  const q=(document.getElementById('noticeSearch')?.value||'').toLowerCase();
- const systemNotices = getSystemData();
- const allNotices = [...systemNotices, ...notices];
-
- document.getElementById('noticeList').innerHTML=allNotices.filter(n=>(n.title+' '+n.text+' '+(n.type||'')).toLowerCase().includes(q)).map(n=>
-  '<div class="notice '+(n.source==='Admin'?'admin-notice':(n.type==='Urgent'?'urgent':''))+'"><strong>'+esc(n.title)+'</strong> '+(n.source ? '<span class="badge '+(n.source==='Admin'?'admin':'upcoming')+'">'+esc(n.source)+'</span>' : '')+'<p style="margin:7px 0">'+esc(n.text)+'</p><span class="small">'+esc(n.type||'Notice')+' · '+esc(n.date)+'</span></div>'
+ document.getElementById('noticeList').innerHTML=notices.filter(n=>(n.title+' '+n.text+' '+n.type).toLowerCase().includes(q)).map(n=>
+  '<div class="notice '+(n.type==='Urgent'?'urgent':'')+'"><strong>'+esc(n.title)+'</strong><p style="margin:7px 0">'+esc(n.text)+'</p><span class="small">'+esc(n.type)+' · '+esc(n.date)+'</span></div>'
  ).join('')||'<p class="empty">No notices found.</p>';
 }
 
-// ---------------- DISCUSSION FORUM ----------------
 function renderForum(){
  document.getElementById('forumList').innerHTML=questions.map(q=>
   '<div class="panel" style="margin-bottom:12px"><span class="badge upcoming">'+esc(q.course)+'</span><h3 style="margin-top:12px">'+esc(q.name)+'</h3><p class="small">Posted by '+esc(q.author)+' · '+esc(q.time)+'</p><p style="margin:12px 0;font-size:13px">Replies: '+q.replies+'</p><button class="secondary" onclick="replyQuestion()">Discuss</button></div>'
@@ -1014,7 +944,6 @@ document.getElementById('forumForm').addEventListener('submit',function(e){
 });
 function replyQuestion(){alert('Demo forum: connect a backend to enable real replies and discussions.');}
 
-// ---------------- PROJECT SHOWCASE ----------------
 function renderProjects(){
  document.getElementById('projectList').innerHTML=projects.map(p=>
   '<div class="card"><h3>'+esc(p.name)+'</h3><p class="small">'+esc(p.tech)+'</p><p style="font-size:13px;line-height:1.6;margin:12px 0">'+esc(p.description)+'</p><a href="'+esc(p.url)+'" target="_blank" rel="noopener noreferrer">GitHub / Portfolio ↗</a></div>'
@@ -1027,7 +956,6 @@ document.getElementById('projectForm').addEventListener('submit',function(e){
  this.reset();renderProjects();alert('Project added to the demo showcase.');
 });
 
-// ---------------- STUDY GROUPS ----------------
 function renderGroups(){
  document.getElementById('groupList').innerHTML=groups.map((g,i)=>
   '<div class="card"><h3>'+esc(g.name)+'</h3><p class="small">'+esc(g.topic)+'</p><p style="margin:12px 0;font-size:13px">'+g.members+' members</p><button '+(joinedGroups.includes(i)?'disabled class="secondary"':'')+' onclick="joinGroup('+i+')">'+(joinedGroups.includes(i)?'Joined':'Join Group')+'</button></div>'
@@ -1043,7 +971,6 @@ document.getElementById('groupForm').addEventListener('submit',function(e){
  this.reset();joinedGroups=[];renderGroups();alert('Study group created in the demo.');
 });
 
-// ---------------- EVENTS ----------------
 function renderEvents(){
  document.getElementById('eventList').innerHTML=events.map((ev,i)=>
   '<div class="card"><span class="badge upcoming">'+esc(ev.type)+'</span><h3 style="margin-top:13px">'+esc(ev.name)+'</h3><p class="small">'+esc(ev.date)+' · '+esc(ev.place)+'</p><button style="margin-top:15px" '+(registeredEvents.includes(i)?'disabled class="secondary"':'')+' onclick="registerEvent('+i+')">'+(registeredEvents.includes(i)?'Registered':'Register Interest')+'</button></div>'
@@ -1054,38 +981,26 @@ function registerEvent(i){
  registeredEvents.push(i);renderEvents();alert('Interest recorded in this demo. This is not an official registration.');
 }
 
-// ---------------- SAFE TEXT OUTPUT ----------------
 function esc(value){
- return String(value ?? "").replace(/[&<>"']/g,function(c){
+ return String(value).replace(/[&<>"']/g,function(c){
   return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
  });
 }
 
-function renderAll() {
-    renderHome();
-    renderCourses();
-    renderAssignments();
-    renderQuizzes();
-    renderVideos();
-    renderCgpa();
-    renderAttendance();
-    renderRoutine();
-    renderMaterials();
-    renderNotices();
-    renderForum();
-    renderProjects();
-    renderGroups();
-    renderEvents();
-}
-
-// ---------------- INITIAL RENDER & REAL-TIME LOCALSTORAGE SYNC ----------------
-renderAll();
-
-window.addEventListener("storage", function(e) {
-    if (e.key === "facultyLMSData" || e.key === "systemLMSData") {
-        renderAll();
-    }
-});
+renderHome();
+renderCourses();
+renderAssignments();
+renderQuizzes();
+renderVideos();
+renderCgpa();
+renderAttendance();
+renderRoutine();
+renderMaterials();
+renderNotices();
+renderForum();
+renderProjects();
+renderGroups();
+renderEvents();
 </script>
 </body>
 </html>

@@ -28,73 +28,44 @@
         <p>Don't have an account? <a href="register.html">Register here</a></p>
     </div>
 
-<script src="api.js"></script>
 <script>
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
+document.getElementById('loginForm').addEventListener('submit', function(e) {
   e.preventDefault();
 
-  const email = document.getElementById('email').value.trim();
+  const email = document.getElementById('email').value.trim().toLowerCase();
   const password = document.getElementById('password').value.trim();
   const selectedRole = document.getElementById('role').value;
 
-  try {
-    let responseData;
+  // স্পেসিফিক ইমেইল, পাসওয়ার্ড এবং ড্যাশবোর্ডের ডিরেক্ট পাথ
+  const validUsers = {
+    'student@gmail.com': { password: 'student123', role: 'student', page: 'dashboard/student-dashboard.html', name: 'Student Account' },
+    'faculty@gmail.com': { password: 'faculty123', role: 'faculty', page: 'dashboard/faculty-dashboard.html', name: 'Faculty Account' },
+    'admin@gmail.com':   { password: 'admin123',   role: 'admin',   page: 'dashboard/admin-dashboard.html',   name: 'Admin Account' }
+  };
 
-    // Call API helper function if available, or fetch directly
-    if (typeof login === 'function') {
-      responseData = await login(email, password);
-    } else {
-      const res = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || 'Login failed.');
-      }
-      responseData = data;
-    }
+  const user = validUsers[email];
 
-    const user = responseData.user || responseData;
-    const token = responseData.token;
-
-    if (token) {
-      localStorage.setItem('token', token);
-    }
-    localStorage.setItem('user', JSON.stringify(user));
-
-    // Normalize roles (database 'teacher' / 'instructor' -> 'faculty')
-    let userRole = (user.role || '').toLowerCase();
-    if (userRole === 'teacher' || userRole === 'instructor') {
-      userRole = 'faculty';
-    }
-
-    // Role validation check
-    if (userRole !== selectedRole) {
-      localStorage.clear();
-      alert(`Role mismatch! This account is registered as "${userRole}", but you selected "${selectedRole}".`);
-      return;
-    }
-
-    // Redirect to matching dashboard page
-    const pages = {
-      student: 'dashboard/student-dashboard.html',
-      faculty: 'dashboard/faculty-dashboard.html',
-      admin: 'dashboard/admin-dashboard.html'
-    };
-
-    if (pages[userRole]) {
-      window.location.href = pages[userRole];
-    } else {
-      alert('Invalid user role assigned to this account.');
-    }
-
-  } catch (err) {
-    console.error('Login error:', err);
-    alert(err.message || 'Unable to log in. Make sure edutrack-backend is running.');
+  if (!user) {
+    alert('ইমেইলটি সঠিক নয়! সঠিক ইমেইল ব্যবহার করুন (student@gmail.com, faculty@gmail.com, admin@gmail.com)');
+    return;
   }
+
+  if (user.password !== password) {
+    alert('পাসওয়ার্ড ভুল হয়েছে!');
+    return;
+  }
+
+  if (user.role !== selectedRole) {
+    alert(`রোল অপশন ভুল নির্বাচন করা হয়েছে! এই অ্যাকাউন্টের জন্য "${user.role}" সিলেক্ট করুন।`);
+    return;
+  }
+
+  // Session storage & Local storage এ ডেটা বসিয়ে ডিরেক্ট রিডাইরেক্ট
+  localStorage.setItem('token', 'fake-jwt-token-edutrack');
+  localStorage.setItem('user', JSON.stringify({ name: user.name, email: email, role: user.role }));
+
+  // ড্যাশবোর্ডে সরাসরি পাঠাবে
+  window.location.href = user.page;
 });
 </script>
 </body>

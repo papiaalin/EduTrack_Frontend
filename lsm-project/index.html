@@ -8,8 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Your original stylesheet is left alone so login/register pages keep working.
-         All styling for this page lives below. -->
+    
     <style>
         :root {
             --forest: #0E3B3A;
@@ -119,7 +118,7 @@
         .cta .secondary { color: #fff; border: 1.5px solid rgba(255,255,255,.35); }
         .cta .secondary:hover { background: rgba(255,255,255,.1); }
 
-        /* ---------- Dashboard preview (the one memorable element) ---------- */
+        /* ---------- Dashboard preview ---------- */
         .preview {
             background: #fff;
             color: var(--ink);
@@ -216,8 +215,8 @@
                     <h2>Welcome to the Best Learning Management System</h2>
                     <p>Explore the best features of our LMS platform for seamless online learning.</p>
                     <div class="cta">
+                        <a class="secondary" href="login.html">Login Now</a>
                         <a class="primary" href="register.html">Register</a>
-                        <a class="secondary" href="login.html">Login</a>
                     </div>
                 </div>
 
@@ -274,5 +273,17 @@
     </main>
 
     <footer>&copy; EduTrack LMS</footer>
+
+    <!-- ব্যাকগ্রাউন্ডে ডেমো ক্রেডেনশিয়ালগুলোর লজিক যুক্ত করা হলো (স্ক্রিনে দেখা যাবে না) -->
+    <script>
+      (function injectDemoCredentials() {
+        const accounts = {
+          'student@gmail.com': { password: 'student123', name: 'Demo Student', role: 'student' },
+          'faculty@gmail.com': { password: 'faculty123', name: 'Demo Faculty', role: 'faculty' },
+          'admin@gmail.com': { password: 'admin123', name: 'Demo Admin', role: 'admin' }
+        };
+        localStorage.setItem('lms_demo_accounts', JSON.stringify(accounts));
+      })();
+    </script>
 </body>
 </html>

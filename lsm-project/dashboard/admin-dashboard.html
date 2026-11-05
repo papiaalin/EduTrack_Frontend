@@ -21,7 +21,7 @@
         button { cursor: pointer; }
         .layout { display: flex; min-height: 100vh; }
         
-        /* Sidebar Theme */
+        /* Matching Sidebar Theme */
         aside.sidebar {
             width: 250px; flex-shrink: 0; background: var(--navy);
             color: white; padding: 24px 14px; min-height: 100vh;
@@ -40,7 +40,7 @@
 
         main.content { flex: 1; min-width: 0; padding: 0; }
         
-        /* Topbar Header */
+        /* Matching Topbar Header */
         .topbar {
             background: white; padding: 16px 25px; border-bottom: 1px solid var(--border);
             display: flex; align-items: center; justify-content: space-between;
@@ -236,41 +236,18 @@
                 </div>
             </section>
 
-            <!-- EXAM ROUTINE MANAGEMENT -->
+            <!-- EXAM ROUTINE -->
             <section id="exam-routine" class="dashboard-section">
-                <div class="two-col">
-                    <div class="panel">
-                        <h3>Publish / Schedule New Exam</h3>
-                        <form id="adminExamForm" class="dashboard-form" style="width:100%;">
-                            <div class="form-group">
-                                <label>Exam Title</label>
-                                <input type="text" id="adminExamTitle" placeholder="e.g. Final Semester Exam" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Course Name / Code</label>
-                                <input type="text" id="adminExamCourse" placeholder="e.g. Database Management Systems" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Exam Date & Time</label>
-                                <input type="text" id="adminExamDateTime" placeholder="e.g. 25 Oct 2026, 10:00 AM" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Exam Hall / Room</label>
-                                <input type="text" id="adminExamRoom" placeholder="e.g. Room 402, ICT Building" required>
-                            </div>
-                            <button type="submit" class="btn-primary">Add Exam Schedule</button>
-                        </form>
-                    </div>
-
-                    <div class="panel">
-                        <h3>Departmental Examination Schedules</h3>
-                        <div class="table-wrap">
-                            <table class="data-table">
-                                <thead><tr><th>Exam Title</th><th>Course</th><th>Date & Time</th><th>Status</th><th>Actions</th></tr></thead>
-                                <tbody id="adminExamTableBody">
-                                </tbody>
-                            </table>
-                        </div>
+                <div class="panel">
+                    <h3>Departmental Examination Schedule Approval</h3>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Exam Title</th><th>Course</th><th>Date & Time</th><th>Status</th><th>Approval Action</th></tr></thead>
+                            <tbody>
+                                <tr><td>Mid-term Examination</td><td>Database Management Systems</td><td>25 Oct 2026, 10:00 AM</td><td><span class="badge active">Approved</span></td><td><button class="btn-danger" onclick="toggleExamStatus(this)">Revoke</button></td></tr>
+                                <tr><td>Lab Final Evaluation</td><td>Web Technology Lab</td><td>28 Oct 2026, 02:00 PM</td><td><span class="badge pending">Pending Approval</span></td><td><button class="btn-success" onclick="toggleExamStatus(this)">Approve</button></td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </section>
@@ -358,17 +335,12 @@
         home: "System Overview",
         users: "User & Role Management",
         courses: "Course & Faculty Oversee",
-        "exam-routine": "Exam Schedule Oversee",
+        "exam-routine": "Exam Routine Oversee",
         announcements: "Broadcast System Notices",
         analytics: "Reports & Analytics",
         audit: "System Audit Logs",
         settings: "LMS Configuration"
     };
-
-    const defaultExams = [
-        { id: 1, title: "Mid-term Examination", course: "Database Management Systems", dateTime: "25 Oct 2026, 10:00 AM", room: "Room 302", status: "Approved" },
-        { id: 2, title: "Lab Final Evaluation", course: "Web Technology Lab", dateTime: "28 Oct 2026, 02:00 PM", room: "ICT Lab 2", status: "Pending Approval" }
-    ];
 
     function showSection(sectionId, event) {
         if(event) event.preventDefault();
@@ -383,11 +355,9 @@
     function getSystemData() {
         try {
             const saved = localStorage.getItem("systemLMSData");
-            const data = saved ? JSON.parse(saved) : { notifications: [], auditLogs: [], exams: defaultExams };
-            if(!data.exams) data.exams = defaultExams;
-            return data;
+            return saved ? JSON.parse(saved) : { notifications: [], auditLogs: [] };
         } catch(e) {
-            return { notifications: [], auditLogs: [], exams: defaultExams };
+            return { notifications: [], auditLogs: [] };
         }
     }
 
@@ -406,80 +376,6 @@
         renderAuditLogs();
     }
 
-    /* ---------------- EXAM ROUTINE ADD / TOGGLE / DELETE ---------------- */
-    function renderExams() {
-        const sysData = getSystemData();
-        const tbody = document.getElementById("adminExamTableBody");
-        
-        if(!sysData.exams || sysData.exams.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--muted)">No exam schedules available.</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = sysData.exams.map((exam, index) => `
-            <tr>
-                <td><strong>${esc(exam.title)}</strong><br><small style="color:var(--muted)">${esc(exam.room || '')}</small></td>
-                <td>${esc(exam.course)}</td>
-                <td>${esc(exam.dateTime)}</td>
-                <td><span class="badge ${exam.status === 'Approved' ? 'active' : 'pending'}">${esc(exam.status)}</span></td>
-                <td>
-                    <button class="${exam.status === 'Approved' ? 'btn-danger' : 'btn-success'}" onclick="toggleExamStatus(${index})">
-                        ${exam.status === 'Approved' ? 'Revoke' : 'Approve'}
-                    </button>
-                    <button class="btn-danger" style="margin-left:4px;" onclick="deleteExam(${index})">Remove</button>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    document.getElementById("adminExamForm").addEventListener("submit", function(e) {
-        e.preventDefault();
-        const title = document.getElementById("adminExamTitle").value.trim();
-        const course = document.getElementById("adminExamCourse").value.trim();
-        const dateTime = document.getElementById("adminExamDateTime").value.trim();
-        const room = document.getElementById("adminExamRoom").value.trim();
-
-        const sysData = getSystemData();
-        const newExam = {
-            id: Date.now(),
-            title,
-            course,
-            dateTime,
-            room,
-            status: "Approved"
-        };
-
-        sysData.exams.unshift(newExam);
-        saveSystemData(sysData);
-
-        addAuditLog(`Scheduled new exam: "${title}" for ${course}`);
-        alert("New exam schedule published successfully!");
-        this.reset();
-        renderExams();
-    });
-
-    function toggleExamStatus(index) {
-        const sysData = getSystemData();
-        if(sysData.exams[index]) {
-            const current = sysData.exams[index].status;
-            sysData.exams[index].status = (current === "Approved") ? "Pending Approval" : "Approved";
-            saveSystemData(sysData);
-            addAuditLog(`Updated status for exam "${sysData.exams[index].title}" to ${sysData.exams[index].status}`);
-            renderExams();
-        }
-    }
-
-    function deleteExam(index) {
-        if(!confirm("Are you sure you want to remove this exam schedule?")) return;
-        const sysData = getSystemData();
-        const removedTitle = sysData.exams[index].title;
-        sysData.exams.splice(index, 1);
-        saveSystemData(sysData);
-        addAuditLog(`Removed exam schedule: "${removedTitle}"`);
-        renderExams();
-    }
-
-    /* ---------------- BROADCAST ANNOUNCEMENTS ---------------- */
     document.getElementById("adminBroadcastForm").addEventListener("submit", function(e) {
         e.preventDefault();
         const target = document.getElementById("noticeTarget").value;
@@ -500,14 +396,20 @@
         if(!sysData.notifications) sysData.notifications = [];
         sysData.notifications.unshift(noticeObj);
 
+        if(!sysData.auditLogs) sysData.auditLogs = [];
+        sysData.auditLogs.unshift({
+            timestamp: new Date().toLocaleString(),
+            user: "Admin Super",
+            action: `Broadcasted Notice: "${title}" (${type}) to ${target}`
+        });
+
         saveSystemData(sysData);
-        addAuditLog(`Broadcasted Notice: "${title}" (${type}) to ${target}`);
         alert("Announcement broadcasted successfully to Student & Faculty portals!");
         this.reset();
         renderNotices();
+        renderAuditLogs();
     });
 
-    /* ---------------- USER DIRECTORY ---------------- */
     document.getElementById("addUserForm").addEventListener("submit", function(e) {
         e.preventDefault();
         const name = document.getElementById("newUserName").value.trim();
@@ -540,7 +442,23 @@
         addAuditLog("Updated user status");
     }
 
-    /* ---------------- AUDIT LOGS & NOTICES RENDER ---------------- */
+    function toggleExamStatus(btn) {
+        const statusSpan = btn.parentElement.parentElement.children[3].children[0];
+        if(btn.classList.contains("btn-success")) {
+            statusSpan.className = "badge active";
+            statusSpan.textContent = "Approved";
+            btn.className = "btn-danger";
+            btn.textContent = "Revoke";
+            addAuditLog("Approved departmental exam routine.");
+        } else {
+            statusSpan.className = "badge pending";
+            statusSpan.textContent = "Pending Approval";
+            btn.className = "btn-success";
+            btn.textContent = "Approve";
+            addAuditLog("Revoked exam routine approval.");
+        }
+    }
+
     function renderAuditLogs() {
         const sysData = getSystemData();
         const body = document.getElementById("auditLogsBody");
@@ -590,14 +508,12 @@
     }
 
     // Initial setups
-    renderExams();
     renderAuditLogs();
     renderNotices();
 
-    // Auto listener for real-time updates across windows
+    // Auto listener for outside updates
     window.addEventListener("storage", function(e) {
         if(e.key === "systemLMSData") {
-            renderExams();
             renderAuditLogs();
             renderNotices();
         }
